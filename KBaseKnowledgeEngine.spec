@@ -7,7 +7,7 @@ module KBaseKnowledgeEngine {
 typedef int boolean;
 
 	/*
-	  state - one of ?queued?, ?started?, ?finished?, ?error?.
+	  state - one of queued, started, finished, error.
 	  output - either empty for queued/started states or error message for error state or output message for finished.
 	*/
 	typedef structure {
@@ -15,6 +15,7 @@ typedef int boolean;
 		string obj_ref;
 		string obj_type;
 		string connector_app;
+		string connector_title;
 		string job_id;
 		string state;
 		string output;
@@ -29,10 +30,13 @@ typedef int boolean;
 	funcdef getConnectorsStatus() returns (list<ConnectorStatus>) authentication required; 
 
 	/*
+	  state - one of none, queued, started, finished, error.
+	  output - either empty for queued/started states or error message for error state or output message for finished.
 	*/
 typedef structure {
 		string user;
 		string app;
+		string app_title;
 		string job_id;
 		string state;
 		string output;
@@ -42,6 +46,7 @@ typedef structure {
 		int queued_epoch_ms;
 		int started_epoch_ms;
 		int finished_epoch_ms;
+		int schedule_epoch_ms;
 	} AppStatus;
 
 	funcdef getAppsStatus() returns (list<AppStatus>) authentication required; 
