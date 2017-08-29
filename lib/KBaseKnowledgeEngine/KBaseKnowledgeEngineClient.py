@@ -36,16 +36,17 @@ class KBaseKnowledgeEngine(object):
     def getConnectorsStatus(self, context=None):
         """
         :returns: instance of list of type "ConnectorStatus" (state - one of
-           ?queued?, ?started?, ?finished?, ?error?. output - either empty
-           for queued/started states or error message for error state or
-           output message for finished.) -> structure: parameter "user" of
-           String, parameter "obj_ref" of String, parameter "obj_type" of
-           String, parameter "connector_app" of String, parameter "job_id" of
-           String, parameter "state" of String, parameter "output" of String,
-           parameter "new_re_nodes" of Long, parameter "updated_re_nodes" of
-           Long, parameter "new_re_links" of Long, parameter
-           "queued_epoch_ms" of Long, parameter "started_epoch_ms" of Long,
-           parameter "finished_epoch_ms" of Long
+           queued, started, finished, error. output - either empty for
+           queued/started states or error message for error state or output
+           message for finished.) -> structure: parameter "user" of String,
+           parameter "obj_ref" of String, parameter "obj_type" of String,
+           parameter "connector_app" of String, parameter "connector_title"
+           of String, parameter "job_id" of String, parameter "state" of
+           String, parameter "output" of String, parameter "new_re_nodes" of
+           Long, parameter "updated_re_nodes" of Long, parameter
+           "new_re_links" of Long, parameter "queued_epoch_ms" of Long,
+           parameter "started_epoch_ms" of Long, parameter
+           "finished_epoch_ms" of Long
         """
         return self._client.call_method(
             'KBaseKnowledgeEngine.getConnectorsStatus',
@@ -53,13 +54,17 @@ class KBaseKnowledgeEngine(object):
 
     def getAppsStatus(self, context=None):
         """
-        :returns: instance of list of type "AppStatus" -> structure:
-           parameter "user" of String, parameter "app" of String, parameter
-           "job_id" of String, parameter "state" of String, parameter
-           "output" of String, parameter "new_re_nodes" of Long, parameter
-           "updated_re_nodes" of Long, parameter "new_re_links" of Long,
-           parameter "queued_epoch_ms" of Long, parameter "started_epoch_ms"
-           of Long, parameter "finished_epoch_ms" of Long
+        :returns: instance of list of type "AppStatus" (state - one of none,
+           queued, started, finished, error. output - either empty for
+           queued/started states or error message for error state or output
+           message for finished.) -> structure: parameter "user" of String,
+           parameter "app" of String, parameter "app_title" of String,
+           parameter "job_id" of String, parameter "state" of String,
+           parameter "output" of String, parameter "new_re_nodes" of Long,
+           parameter "updated_re_nodes" of Long, parameter "new_re_links" of
+           Long, parameter "queued_epoch_ms" of Long, parameter
+           "started_epoch_ms" of Long, parameter "finished_epoch_ms" of Long,
+           parameter "scheduled_epoch_ms" of Long
         """
         return self._client.call_method(
             'KBaseKnowledgeEngine.getAppsStatus',

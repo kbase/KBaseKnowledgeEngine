@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: ConnectorStatus</p>
  * <pre>
- * state - one of ?queued?, ?started?, ?finished?, ?error?.
+ * state - one of queued, started, finished, error.
  * output - either empty for queued/started states or error message for error state or output message for finished.
  * </pre>
  * 
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "obj_ref",
     "obj_type",
     "connector_app",
+    "connector_title",
     "job_id",
     "state",
     "output",
@@ -46,6 +47,8 @@ public class ConnectorStatus {
     private String objType;
     @JsonProperty("connector_app")
     private String connectorApp;
+    @JsonProperty("connector_title")
+    private String connectorTitle;
     @JsonProperty("job_id")
     private String jobId;
     @JsonProperty("state")
@@ -123,6 +126,21 @@ public class ConnectorStatus {
 
     public ConnectorStatus withConnectorApp(String connectorApp) {
         this.connectorApp = connectorApp;
+        return this;
+    }
+
+    @JsonProperty("connector_title")
+    public String getConnectorTitle() {
+        return connectorTitle;
+    }
+
+    @JsonProperty("connector_title")
+    public void setConnectorTitle(String connectorTitle) {
+        this.connectorTitle = connectorTitle;
+    }
+
+    public ConnectorStatus withConnectorTitle(String connectorTitle) {
+        this.connectorTitle = connectorTitle;
         return this;
     }
 
@@ -273,7 +291,7 @@ public class ConnectorStatus {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((("ConnectorStatus"+" [user=")+ user)+", objRef=")+ objRef)+", objType=")+ objType)+", connectorApp=")+ connectorApp)+", jobId=")+ jobId)+", state=")+ state)+", output=")+ output)+", newReNodes=")+ newReNodes)+", updatedReNodes=")+ updatedReNodes)+", newReLinks=")+ newReLinks)+", queuedEpochMs=")+ queuedEpochMs)+", startedEpochMs=")+ startedEpochMs)+", finishedEpochMs=")+ finishedEpochMs)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((("ConnectorStatus"+" [user=")+ user)+", objRef=")+ objRef)+", objType=")+ objType)+", connectorApp=")+ connectorApp)+", connectorTitle=")+ connectorTitle)+", jobId=")+ jobId)+", state=")+ state)+", output=")+ output)+", newReNodes=")+ newReNodes)+", updatedReNodes=")+ updatedReNodes)+", newReLinks=")+ newReLinks)+", queuedEpochMs=")+ queuedEpochMs)+", startedEpochMs=")+ startedEpochMs)+", finishedEpochMs=")+ finishedEpochMs)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

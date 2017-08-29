@@ -22,8 +22,8 @@ import us.kbase.common.service.RpcContext;
 public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.1";
-    private static final String gitUrl = "";
-    private static final String gitCommitHash = "";
+    private static final String gitUrl = "https://github.com/rsutormin/KBaseKnowledgeEngine";
+    private static final String gitCommitHash = "c872abc3020b974593bde82ea572bea4d7b63cfc";
 
     //BEGIN_CLASS_HEADER
     FakeKBaseKnowledgeEngine fakeImpl = new FakeKBaseKnowledgeEngine();

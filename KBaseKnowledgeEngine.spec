@@ -46,7 +46,7 @@ typedef structure {
 		int queued_epoch_ms;
 		int started_epoch_ms;
 		int finished_epoch_ms;
-		int schedule_epoch_ms;
+		int scheduled_epoch_ms;
 	} AppStatus;
 
 	funcdef getAppsStatus() returns (list<AppStatus>) authentication required; 

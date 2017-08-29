@@ -125,6 +125,7 @@ ConnectorStatus is a reference to a hash where the following keys are defined:
 	obj_ref has a value which is a string
 	obj_type has a value which is a string
 	connector_app has a value which is a string
+	connector_title has a value which is a string
 	job_id has a value which is a string
 	state has a value which is a string
 	output has a value which is a string
@@ -147,6 +148,7 @@ ConnectorStatus is a reference to a hash where the following keys are defined:
 	obj_ref has a value which is a string
 	obj_type has a value which is a string
 	connector_app has a value which is a string
+	connector_title has a value which is a string
 	job_id has a value which is a string
 	state has a value which is a string
 	output has a value which is a string
@@ -220,6 +222,7 @@ $return is a reference to a list where each element is a KBaseKnowledgeEngine.Ap
 AppStatus is a reference to a hash where the following keys are defined:
 	user has a value which is a string
 	app has a value which is a string
+	app_title has a value which is a string
 	job_id has a value which is a string
 	state has a value which is a string
 	output has a value which is a string
@@ -229,6 +232,7 @@ AppStatus is a reference to a hash where the following keys are defined:
 	queued_epoch_ms has a value which is an int
 	started_epoch_ms has a value which is an int
 	finished_epoch_ms has a value which is an int
+	scheduled_epoch_ms has a value which is an int
 
 </pre>
 
@@ -240,6 +244,7 @@ $return is a reference to a list where each element is a KBaseKnowledgeEngine.Ap
 AppStatus is a reference to a hash where the following keys are defined:
 	user has a value which is a string
 	app has a value which is a string
+	app_title has a value which is a string
 	job_id has a value which is a string
 	state has a value which is a string
 	output has a value which is a string
@@ -249,6 +254,7 @@ AppStatus is a reference to a hash where the following keys are defined:
 	queued_epoch_ms has a value which is an int
 	started_epoch_ms has a value which is an int
 	finished_epoch_ms has a value which is an int
+	scheduled_epoch_ms has a value which is an int
 
 
 =end text
@@ -518,7 +524,7 @@ an int
 
 =item Description
 
-state - one of ?queued?, ?started?, ?finished?, ?error?.
+state - one of queued, started, finished, error.
 output - either empty for queued/started states or error message for error state or output message for finished.
 
 
@@ -532,6 +538,7 @@ user has a value which is a string
 obj_ref has a value which is a string
 obj_type has a value which is a string
 connector_app has a value which is a string
+connector_title has a value which is a string
 job_id has a value which is a string
 state has a value which is a string
 output has a value which is a string
@@ -553,6 +560,7 @@ user has a value which is a string
 obj_ref has a value which is a string
 obj_type has a value which is a string
 connector_app has a value which is a string
+connector_title has a value which is a string
 job_id has a value which is a string
 state has a value which is a string
 output has a value which is a string
@@ -576,6 +584,12 @@ finished_epoch_ms has a value which is an int
 
 
 
+=item Description
+
+state - one of none, queued, started, finished, error.
+output - either empty for queued/started states or error message for error state or output message for finished.
+
+
 =item Definition
 
 =begin html
@@ -584,6 +598,7 @@ finished_epoch_ms has a value which is an int
 a reference to a hash where the following keys are defined:
 user has a value which is a string
 app has a value which is a string
+app_title has a value which is a string
 job_id has a value which is a string
 state has a value which is a string
 output has a value which is a string
@@ -593,6 +608,7 @@ new_re_links has a value which is an int
 queued_epoch_ms has a value which is an int
 started_epoch_ms has a value which is an int
 finished_epoch_ms has a value which is an int
+scheduled_epoch_ms has a value which is an int
 
 </pre>
 
@@ -603,6 +619,7 @@ finished_epoch_ms has a value which is an int
 a reference to a hash where the following keys are defined:
 user has a value which is a string
 app has a value which is a string
+app_title has a value which is a string
 job_id has a value which is a string
 state has a value which is a string
 output has a value which is a string
@@ -612,6 +629,7 @@ new_re_links has a value which is an int
 queued_epoch_ms has a value which is an int
 started_epoch_ms has a value which is an int
 finished_epoch_ms has a value which is an int
+scheduled_epoch_ms has a value which is an int
 
 
 =end text
