@@ -26,6 +26,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final String gitCommitHash = "";
 
     //BEGIN_CLASS_HEADER
+    FakeKBaseKnowledgeEngine fakeImpl = new FakeKBaseKnowledgeEngine();
     //END_CLASS_HEADER
 
     public KBaseKnowledgeEngineServer() throws Exception {
@@ -44,6 +45,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public List<ConnectorStatus> getConnectorsStatus(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         List<ConnectorStatus> returnVal = null;
         //BEGIN getConnectorsStatus
+        returnVal = fakeImpl.getConnectorsStatus(authPart, jsonRpcContext);
         //END getConnectorsStatus
         return returnVal;
     }
@@ -58,6 +60,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public List<AppStatus> getAppsStatus(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         List<AppStatus> returnVal = null;
         //BEGIN getAppsStatus
+        returnVal = fakeImpl.getAppsStatus(authPart, jsonRpcContext);
         //END getAppsStatus
         return returnVal;
     }
@@ -73,6 +76,23 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public RunAppOutput runApp(RunAppParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         RunAppOutput returnVal = null;
         //BEGIN runApp
+        
+        for(AppStatus appStatus: fakeApps){
+        	if(appStatus.getApp().equals(params.getApp())){
+        		appStatus
+        		.withUser(_app[0])
+        		.withApp(_app[1])
+        		.withJobId(_app[2])
+        		.withState(_app[3])
+        		.withOutput(_app[4])
+        		.withNewReNodes(Long.parseLong(_app[5]))
+        		.withUpdatedReNodes(Long.parseLong(_app[6]))
+        		.withNewReLinks(Long.parseLong(_app[7]))
+        		.withQueuedEpochMs(Long.parseLong(_app[8]))
+        		.withStartedEpochMs(Long.parseLong(_app[9]))
+        		.withFinishedEpochMs(Long.parseLong(_app[9])));    
+        	}
+        }
         //END runApp
         return returnVal;
     }
