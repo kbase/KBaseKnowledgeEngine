@@ -64,8 +64,6 @@ public class FakeKBaseKnowledgeEngine {
             		.withStartedEpochMs(Long.parseLong(_app[9]))
             		.withFinishedEpochMs(Long.parseLong(_app[9])));        	
         }        
-        
-    	
     }
 
 
@@ -98,4 +96,16 @@ public class FakeKBaseKnowledgeEngine {
         return new RunAppOutput().withJobId("12317624");
 	}
 
+	public static void main(String[] args) {
+		FakeKBaseKnowledgeEngine f =  new FakeKBaseKnowledgeEngine();
+		System.out.println("Connectors: " + f.getConnectorsStatus(null, null).size());
+		System.out.println("Apps: " + f.getAppsStatus(null, null).size());
+		
+		
+		System.out.println("Before:" + f.getAppsStatus(null, null).get(6));
+		f.runApp(new RunAppParams().withApp("Fitness: orthology GO profiles"), null, null);
+		System.out.println("After:" + f.getAppsStatus(null, null).get(6));
+	}
+	
+	
 }

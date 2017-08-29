@@ -76,23 +76,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public RunAppOutput runApp(RunAppParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         RunAppOutput returnVal = null;
         //BEGIN runApp
-        
-        for(AppStatus appStatus: fakeApps){
-        	if(appStatus.getApp().equals(params.getApp())){
-        		appStatus
-        		.withUser(_app[0])
-        		.withApp(_app[1])
-        		.withJobId(_app[2])
-        		.withState(_app[3])
-        		.withOutput(_app[4])
-        		.withNewReNodes(Long.parseLong(_app[5]))
-        		.withUpdatedReNodes(Long.parseLong(_app[6]))
-        		.withNewReLinks(Long.parseLong(_app[7]))
-        		.withQueuedEpochMs(Long.parseLong(_app[8]))
-        		.withStartedEpochMs(Long.parseLong(_app[9]))
-        		.withFinishedEpochMs(Long.parseLong(_app[9])));    
-        	}
-        }
+        returnVal = fakeImpl.runApp(params, authPart, jsonRpcContext);
         //END runApp
         return returnVal;
     }
