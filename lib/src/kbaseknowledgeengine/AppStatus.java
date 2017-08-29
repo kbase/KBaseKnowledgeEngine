@@ -13,7 +13,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * <p>Original spec-file type: AppStatus</p>
- * 
+ * <pre>
+ * state - one of none, queued, started, finished, error.
+ * output - either empty for queued/started states or error message for error state or output message for finished.
+ * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -21,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "user",
     "app",
+    "app_title",
     "job_id",
     "state",
     "output",
@@ -29,7 +33,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "new_re_links",
     "queued_epoch_ms",
     "started_epoch_ms",
-    "finished_epoch_ms"
+    "finished_epoch_ms",
+    "scheduled_epoch_ms"
 })
 public class AppStatus {
 
@@ -37,6 +42,8 @@ public class AppStatus {
     private String user;
     @JsonProperty("app")
     private String app;
+    @JsonProperty("app_title")
+    private String appTitle;
     @JsonProperty("job_id")
     private String jobId;
     @JsonProperty("state")
@@ -55,6 +62,8 @@ public class AppStatus {
     private Long startedEpochMs;
     @JsonProperty("finished_epoch_ms")
     private Long finishedEpochMs;
+    @JsonProperty("scheduled_epoch_ms")
+    private Long scheduledEpochMs;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("user")
@@ -84,6 +93,21 @@ public class AppStatus {
 
     public AppStatus withApp(String app) {
         this.app = app;
+        return this;
+    }
+
+    @JsonProperty("app_title")
+    public String getAppTitle() {
+        return appTitle;
+    }
+
+    @JsonProperty("app_title")
+    public void setAppTitle(String appTitle) {
+        this.appTitle = appTitle;
+    }
+
+    public AppStatus withAppTitle(String appTitle) {
+        this.appTitle = appTitle;
         return this;
     }
 
@@ -222,6 +246,21 @@ public class AppStatus {
         return this;
     }
 
+    @JsonProperty("scheduled_epoch_ms")
+    public Long getScheduledEpochMs() {
+        return scheduledEpochMs;
+    }
+
+    @JsonProperty("scheduled_epoch_ms")
+    public void setScheduledEpochMs(Long scheduledEpochMs) {
+        this.scheduledEpochMs = scheduledEpochMs;
+    }
+
+    public AppStatus withScheduledEpochMs(Long scheduledEpochMs) {
+        this.scheduledEpochMs = scheduledEpochMs;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -234,7 +273,7 @@ public class AppStatus {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((("AppStatus"+" [user=")+ user)+", app=")+ app)+", jobId=")+ jobId)+", state=")+ state)+", output=")+ output)+", newReNodes=")+ newReNodes)+", updatedReNodes=")+ updatedReNodes)+", newReLinks=")+ newReLinks)+", queuedEpochMs=")+ queuedEpochMs)+", startedEpochMs=")+ startedEpochMs)+", finishedEpochMs=")+ finishedEpochMs)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((("AppStatus"+" [user=")+ user)+", app=")+ app)+", appTitle=")+ appTitle)+", jobId=")+ jobId)+", state=")+ state)+", output=")+ output)+", newReNodes=")+ newReNodes)+", updatedReNodes=")+ updatedReNodes)+", newReLinks=")+ newReLinks)+", queuedEpochMs=")+ queuedEpochMs)+", startedEpochMs=")+ startedEpochMs)+", finishedEpochMs=")+ finishedEpochMs)+", scheduledEpochMs=")+ scheduledEpochMs)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

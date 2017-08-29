@@ -2,3 +2,5 @@ test_local
 sdk.cfg
 bin
 .classpath
+.project
+*Server.java.bak-*
