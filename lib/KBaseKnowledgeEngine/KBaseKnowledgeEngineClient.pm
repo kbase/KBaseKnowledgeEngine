@@ -344,7 +344,7 @@ RunAppOutput is a reference to a hash where the following keys are defined:
 
 =item Description
 
-
+Execute KE-App.
 
 =back
 
@@ -396,6 +396,73 @@ RunAppOutput is a reference to a hash where the following keys are defined:
     }
 }
  
+
+
+=head2 testInit
+
+  $obj->testInit()
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+
+</pre>
+
+=end html
+
+=begin text
+
+
+
+=end text
+
+=item Description
+
+Restores the initial state (for testing)
+
+=back
+
+=cut
+
+ sub testInit
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 0)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function testInit (received $n, expecting 0)");
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "KBaseKnowledgeEngine.testInit",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'testInit',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return;
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method testInit",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'testInit',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -439,16 +506,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'runApp',
+                method_name => 'testInit',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method runApp",
+            error => "Error invoking method testInit",
             status_line => $self->{client}->status_line,
-            method_name => 'runApp',
+            method_name => 'testInit',
         );
     }
 }

@@ -4,7 +4,7 @@ A KBase module: KBaseKnowledgeEngine
 
 module KBaseKnowledgeEngine {
 	/* A boolean. 0 = false, other = true. */
-typedef int boolean;
+	typedef int boolean;
 
 	/*
 	  state - one of queued, started, finished, error.
@@ -33,7 +33,7 @@ typedef int boolean;
 	  state - one of none, queued, started, finished, error.
 	  output - either empty for queued/started states or error message for error state or output message for finished.
 	*/
-typedef structure {
+	typedef structure {
 		string user;
 		string app;
 		string app_title;
@@ -55,14 +55,23 @@ typedef structure {
 	  app - name of registered KB-SDK module configured to be compatible with KE.
 	  ref_mode - flag for public reference data processing (accessible only for admins).
 	*/
-typedef structure {
+	typedef structure {
 		string app;
 		boolean ref_mode;
 	} RunAppParams;
 
-typedef structure {
+	typedef structure {
 		string job_id;
 	} RunAppOutput;
 
+	/*
+		Execute KE-App.  
+	*/
 	funcdef runApp(RunAppParams params) returns (RunAppOutput) authentication required;
+	
+	
+	/*
+		Restores the initial state (for testing)
+	*/
+	funcdef testInit() returns () authentication required;
 };

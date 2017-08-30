@@ -195,6 +195,7 @@ public class KBaseKnowledgeEngineClient {
     /**
      * <p>Original spec-file function name: runApp</p>
      * <pre>
+     * Execute KE-App.
      * </pre>
      * @param   params   instance of type {@link kbaseknowledgeengine.RunAppParams RunAppParams}
      * @return   instance of type {@link kbaseknowledgeengine.RunAppOutput RunAppOutput}
@@ -207,6 +208,20 @@ public class KBaseKnowledgeEngineClient {
         TypeReference<List<RunAppOutput>> retType = new TypeReference<List<RunAppOutput>>() {};
         List<RunAppOutput> res = caller.jsonrpcCall("KBaseKnowledgeEngine.runApp", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: testInit</p>
+     * <pre>
+     * Restores the initial state (for testing)
+     * </pre>
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public void testInit(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        TypeReference<Object> retType = new TypeReference<Object>() {};
+        caller.jsonrpcCall("KBaseKnowledgeEngine.testInit", args, retType, false, true, jsonRpcContext, this.serviceVersion);
     }
 
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
