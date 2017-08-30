@@ -72,6 +72,7 @@ class KBaseKnowledgeEngine(object):
 
     def runApp(self, params, context=None):
         """
+        Execute KE-App.
         :param params: instance of type "RunAppParams" (app - name of
            registered KB-SDK module configured to be compatible with KE.
            ref_mode - flag for public reference data processing (accessible
@@ -84,6 +85,14 @@ class KBaseKnowledgeEngine(object):
         return self._client.call_method(
             'KBaseKnowledgeEngine.runApp',
             [params], self._service_ver, context)
+
+    def testInit(self, context=None):
+        """
+        Restores the initial state (for testing)
+        """
+        return self._client.call_method(
+            'KBaseKnowledgeEngine.testInit',
+            [], self._service_ver, context)
 
     def status(self, context=None):
         return self._client.call_method('KBaseKnowledgeEngine.status',

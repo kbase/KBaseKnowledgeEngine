@@ -22,8 +22,8 @@ import us.kbase.common.service.RpcContext;
 public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.1";
-    private static final String gitUrl = "https://github.com/rsutormin/KBaseKnowledgeEngine";
-    private static final String gitCommitHash = "c872abc3020b974593bde82ea572bea4d7b63cfc";
+    private static final String gitUrl = "https://github.com/psnovichkov/KBaseKnowledgeEngine.git";
+    private static final String gitCommitHash = "78aa3b07a54f602d227d093607e6d8df75c636a7";
 
     //BEGIN_CLASS_HEADER
     FakeKBaseKnowledgeEngine fakeImpl = new FakeKBaseKnowledgeEngine();
@@ -68,6 +68,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     /**
      * <p>Original spec-file function name: runApp</p>
      * <pre>
+     * Execute KE-App.
      * </pre>
      * @param   params   instance of type {@link kbaseknowledgeengine.RunAppParams RunAppParams}
      * @return   instance of type {@link kbaseknowledgeengine.RunAppOutput RunAppOutput}
@@ -79,6 +80,19 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
         returnVal = fakeImpl.runApp(params, authPart, jsonRpcContext);
         //END runApp
         return returnVal;
+    }
+
+    /**
+     * <p>Original spec-file function name: testInit</p>
+     * <pre>
+     * Restores the initial state (for testing)
+     * </pre>
+     */
+    @JsonServerMethod(rpc = "KBaseKnowledgeEngine.testInit", async=true)
+    public void testInit(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
+        //BEGIN testInit
+    	fakeImpl.testInit(authPart, jsonRpcContext);
+        //END testInit
     }
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.status")
     public Map<String, Object> status() {
