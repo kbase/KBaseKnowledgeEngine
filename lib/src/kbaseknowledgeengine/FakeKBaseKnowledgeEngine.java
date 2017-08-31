@@ -8,6 +8,8 @@ import us.kbase.common.service.RpcContext;
 
 public class FakeKBaseKnowledgeEngine {
 	
+	static int jobId = 12346720;
+	static int STAT_CHANGE_TIME_DELAY = 5000;
 	static final Long cms = System.currentTimeMillis();
 	static final String[][] _apps = new String[][]{
     	{"kbadmin", "A1", "Orthology GO profiles",       		"12346715", "finished", "<output>", "500000", "0", "500000",   "" + (cms + 1000), "" + (cms + 50000), "" + (cms + (3600 + 2389)*1000), "" + (cms + (3600 * 5000)*1000)},
@@ -27,6 +29,56 @@ public class FakeKBaseKnowledgeEngine {
     List<AppStatus> fakeApps;
     List<ConnectorStatus> fakeConnectors;
 
+    class RunAppThread extends Thread {
+    	AppStatus appStatus;
+    	public RunAppThread(AppStatus appStatus){
+    		this.appStatus = appStatus;
+    	}
+    	
+    	@Override
+		public void run() {
+			try {
+				// State None
+				appStatus
+					.withJobId("0")
+					.withState("none")
+					.withNewReNodes(0L)
+					.withUpdatedReNodes(0L)
+					.withNewReLinks(0L)
+					.withQueuedEpochMs(0L)
+					.withStartedEpochMs(0L)
+					.withFinishedEpochMs(0L);
+					
+				Thread.sleep(STAT_CHANGE_TIME_DELAY);
+				
+				// State queued
+				appStatus
+					.withJobId("" + (jobId++))
+					.withState("queued")
+					.withQueuedEpochMs(System.currentTimeMillis());
+				
+				Thread.sleep(STAT_CHANGE_TIME_DELAY);
+				
+				// State started
+				appStatus
+					.withState("started")
+					.withStartedEpochMs(System.currentTimeMillis());
+				
+				Thread.sleep(STAT_CHANGE_TIME_DELAY);
+				
+				// State started
+				appStatus
+					.withState("finished")
+	        		.withNewReNodes(Long.parseLong("12767346"))
+	        		.withUpdatedReNodes(Long.parseLong("165246"))
+	        		.withNewReLinks(Long.parseLong("23748234"))					
+					.withFinishedEpochMs(System.currentTimeMillis());
+				
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}    	
+    }
 	
     public FakeKBaseKnowledgeEngine() {
     	buildApps();
@@ -99,19 +151,20 @@ public class FakeKBaseKnowledgeEngine {
 		
         for(AppStatus appStatus: fakeApps){
         	if(appStatus.getApp().equals(params.getApp())){
-        		appStatus
-        		.withJobId("12317624")
-        		.withState("finished")
-        		.withNewReNodes(Long.parseLong("12767346"))
-        		.withUpdatedReNodes(Long.parseLong("165246"))
-        		.withNewReLinks(Long.parseLong("23748234"))
-        		.withQueuedEpochMs(Long.parseLong("" + cms))
-        		.withStartedEpochMs(Long.parseLong("" + (cms + 10023)))
-        		.withFinishedEpochMs(Long.parseLong("" + (cms + 32346*1000)))    
-        		.withScheduledEpochMs(Long.parseLong("" + (cms + (3600 * 5000)*1000)));        		
+        		new RunAppThread(appStatus).start();
+//        		appStatus
+//        		.withJobId("12317624")
+//        		.withState("finished")
+//        		.withNewReNodes(Long.parseLong("12767346"))
+//        		.withUpdatedReNodes(Long.parseLong("165246"))
+//        		.withNewReLinks(Long.parseLong("23748234"))
+//        		.withQueuedEpochMs(Long.parseLong("" + cms))
+//        		.withStartedEpochMs(Long.parseLong("" + (cms + 10023)))
+//        		.withFinishedEpochMs(Long.parseLong("" + (cms + 32346*1000)))    
+//        		.withScheduledEpochMs(Long.parseLong("" + (cms + (3600 * 5000)*1000)));        		
         	}
         }		
-        return new RunAppOutput().withJobId("12317624");
+        return new RunAppOutput().withJobId("" + jobId);
 	}
 
 	public void testInit(AuthToken authPart, RpcContext jsonRpcContext) {
