@@ -13,7 +13,7 @@ public class FakeKBaseKnowledgeEngine {
 	static final Long cms = System.currentTimeMillis();
 	
 	static final String STATE_NONE = "none";
-	static final String STATE_LAUNCHED = "launched";
+	static final String STATE_ACCEPTED = "accepted";
 	static final String STATE_QUEUED = "queued";
 	static final String STATE_STARTED = "started";
 	static final String STATE_FINISHED = "finished";
@@ -50,7 +50,7 @@ public class FakeKBaseKnowledgeEngine {
 				// State None
 				appStatus
 					.withJobId("0")
-					.withState(STATE_LAUNCHED)
+					.withState(STATE_ACCEPTED)
 					.withNewReNodes(0L)
 					.withUpdatedReNodes(0L)
 					.withNewReLinks(0L)
