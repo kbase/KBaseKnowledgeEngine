@@ -11,18 +11,27 @@ public class FakeKBaseKnowledgeEngine {
 	static int jobId = 12346720;
 	static int STAT_CHANGE_TIME_DELAY = 5000;
 	static final Long cms = System.currentTimeMillis();
+	
+	static final String STATE_NONE = "none";
+	static final String STATE_LAUNCHED = "launched";
+	static final String STATE_QUEUED = "queued";
+	static final String STATE_STARTED = "started";
+	static final String STATE_FINISHED = "finished";
+	static final String STATE_ERROR = "error";
+	
+	
 	static final String[][] _apps = new String[][]{
-    	{"kbadmin", "A1", "Orthology GO profiles",       		"12346715", "finished", "<output>", "500000", "0", "500000",   "" + (cms + 1000), "" + (cms + 50000), "" + (cms + (3600 + 2389)*1000), "" + (cms + (3600 * 5000)*1000)},
-    	{"kbadmin", "A2", "Expression: biclusters (HCL)", 		"12346716", "finished", "<output>", "2000",   "0", "200000",   "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
-    	{"kbadmin", "A3", "Expression: GO enrichemt",     		"12346717", "finished", "<output>", "2000",   "0", "4500",     "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
-    	{"kbadmin", "A4", "Expression: orthology GO profiles",	"12346718", "finished", "<output>", "2000",   "0", "5800",     "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
-    	{"kbadmin", "A5", "Fitness: biclusters (HCL)",	 		"12346719", "finished", "<output>", "4590",   "0", "4590548",  "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
-    	{"kbadmin", "A6", "Fitness: GO enrichemt",     			"12346720", "finished", "<output>", "4590",   "0", "49048",    "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
-    	{"kbadmin", "A7", "Fitness: orthology GO profiles",		"0",        "none", 	"<output>", "0",      "0", "0",        "0", "0", "0", "0" }
+    	{"kbadmin", "A1", "Orthology GO profiles",       		"12346715", STATE_FINISHED, "<output>", "500000", "0", "500000",   "" + (cms + 1000), "" + (cms + 50000), "" + (cms + (3600 + 2389)*1000), "" + (cms + (3600 * 5000)*1000)},
+    	{"kbadmin", "A2", "Expression: biclusters (HCL)", 		"12346716", STATE_FINISHED, "<output>", "2000",   "0", "200000",   "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
+    	{"kbadmin", "A3", "Expression: GO enrichemt",     		"12346717", STATE_FINISHED, "<output>", "2000",   "0", "4500",     "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
+    	{"kbadmin", "A4", "Expression: orthology GO profiles",	"12346718", STATE_FINISHED, "<output>", "2000",   "0", "5800",     "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
+    	{"kbadmin", "A5", "Fitness: biclusters (HCL)",	 		"12346719", STATE_FINISHED, "<output>", "4590",   "0", "4590548",  "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
+    	{"kbadmin", "A6", "Fitness: GO enrichemt",     			"12346720", STATE_FINISHED, "<output>", "4590",   "0", "49048",    "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000), "" + (cms + (3600 * 5000)*1000)},
+    	{"kbadmin", "A7", "Fitness: orthology GO profiles",		"0",        STATE_NONE, 	"<output>", "0",      "0", "0",        "0", "0", "0", "0" }
     };  
 	String[][] _connectors = new String[][]{
-		{"psnovichkov", "<obj_ref>", "<obj_type>", "GenomeHomologyConnector", "Genome homology connector", "12346712", "finished", "<output>", "4858", "0", "4858", "" + (cms + 1000), "" + (cms + 50000), "" + (cms + (3600 + 2389)*1000)},
-		{"rsutormin",   "<obj_ref>", "<obj_type>", "GenomeHomologyConnector", "Genome homology connector", "12346713", "queued",   "<output>", "4457", "0", "4457", "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000)},
+		{"psnovichkov", "<obj_ref>", "<obj_type>", "GenomeHomologyConnector", "Genome homology connector", "12346712", STATE_FINISHED, "<output>", "4858", "0", "4858", "" + (cms + 1000), "" + (cms + 50000), "" + (cms + (3600 + 2389)*1000)},
+		{"rsutormin",   "<obj_ref>", "<obj_type>", "GenomeHomologyConnector", "Genome homology connector", "12346713", STATE_QUEUED,   "<output>", "4457", "0", "4457", "" + (cms + 1000), "" + (cms + 53000), "" + (cms + (3600 + 1237)*1000)},
 	};
 	
     
@@ -41,7 +50,7 @@ public class FakeKBaseKnowledgeEngine {
 				// State None
 				appStatus
 					.withJobId("0")
-					.withState("none")
+					.withState(STATE_LAUNCHED)
 					.withNewReNodes(0L)
 					.withUpdatedReNodes(0L)
 					.withNewReLinks(0L)
@@ -54,21 +63,21 @@ public class FakeKBaseKnowledgeEngine {
 				// State queued
 				appStatus
 					.withJobId("" + (jobId++))
-					.withState("queued")
+					.withState(STATE_QUEUED)
 					.withQueuedEpochMs(System.currentTimeMillis());
 				
 				Thread.sleep(STAT_CHANGE_TIME_DELAY);
 				
 				// State started
 				appStatus
-					.withState("started")
+					.withState(STATE_STARTED)
 					.withStartedEpochMs(System.currentTimeMillis());
 				
 				Thread.sleep(STAT_CHANGE_TIME_DELAY);
 				
 				// State started
 				appStatus
-					.withState("finished")
+					.withState(STATE_FINISHED)
 	        		.withNewReNodes(Long.parseLong("12767346"))
 	        		.withUpdatedReNodes(Long.parseLong("165246"))
 	        		.withNewReLinks(Long.parseLong("23748234"))					
