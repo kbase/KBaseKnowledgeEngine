@@ -26,7 +26,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final String gitCommitHash = "78aa3b07a54f602d227d093607e6d8df75c636a7";
 
     //BEGIN_CLASS_HEADER
-    FakeKBaseKnowledgeEngine fakeImpl = new FakeKBaseKnowledgeEngine();
+    IKBaseKnowledgeEngine impl = new FakeKBaseKnowledgeEngine();
     //END_CLASS_HEADER
 
     public KBaseKnowledgeEngineServer() throws Exception {
@@ -45,7 +45,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public List<ConnectorStatus> getConnectorsStatus(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         List<ConnectorStatus> returnVal = null;
         //BEGIN getConnectorsStatus
-        returnVal = fakeImpl.getConnectorsStatus(authPart, jsonRpcContext);
+        returnVal = impl.getConnectorsStatus(authPart, jsonRpcContext);
         //END getConnectorsStatus
         return returnVal;
     }
@@ -60,7 +60,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public List<AppStatus> getAppsStatus(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         List<AppStatus> returnVal = null;
         //BEGIN getAppsStatus
-        returnVal = fakeImpl.getAppsStatus(authPart, jsonRpcContext);
+        returnVal = impl.getAppsStatus(authPart, jsonRpcContext);
         //END getAppsStatus
         return returnVal;
     }
@@ -77,7 +77,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public RunAppOutput runApp(RunAppParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         RunAppOutput returnVal = null;
         //BEGIN runApp
-        returnVal = fakeImpl.runApp(params, authPart, jsonRpcContext);
+        returnVal = impl.runApp(params, authPart, jsonRpcContext);
         //END runApp
         return returnVal;
     }
@@ -91,7 +91,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.testInit", async=true)
     public void testInit(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         //BEGIN testInit
-    	fakeImpl.testInit(authPart, jsonRpcContext);
+    	impl.testInit(authPart, jsonRpcContext);
         //END testInit
     }
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.status")

@@ -13,6 +13,7 @@ import junit.framework.Assert;
 import org.ini4j.Ini;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import kbaseknowledgeengine.KBaseKnowledgeEngineServer;
@@ -27,6 +28,7 @@ import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.WorkspaceClient;
 import us.kbase.workspace.WorkspaceIdentity;
 
+@Ignore
 public class KBaseKnowledgeEngineServerTest {
     private static AuthToken token = null;
     private static Map<String, String> config = null;
