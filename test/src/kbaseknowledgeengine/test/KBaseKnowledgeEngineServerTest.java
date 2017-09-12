@@ -92,7 +92,7 @@ public class KBaseKnowledgeEngineServerTest {
     }
     
     @Test
-    public void testYourMethod() throws Exception {
+    public void testMain() throws Exception {
         // Prepare test data using the appropriate uploader for that method (see the KBase function
         // catalog for help, https://narrative.kbase.us/#catalog/functions)
         //
