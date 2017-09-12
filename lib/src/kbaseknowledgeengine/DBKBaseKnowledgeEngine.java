@@ -20,7 +20,6 @@ import kbaseknowledgeengine.cfg.AppConfigLoader;
 import kbaseknowledgeengine.db.AppJob;
 import kbaseknowledgeengine.db.MongoStorage;
 import kbaseknowledgeengine.db.MongoStorageException;
-import kbaseknowledgeengine.test.TestCommon;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.RpcContext;
 import us.kbase.common.service.UObject;
@@ -44,7 +43,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             Map<String, String> reConfig) throws MongoStorageException, IOException {
         if (mongoHosts == null || mongoHosts.trim().length() == 0) {
             // Startup internal Mongo
-            File tempDir = Paths.get(TestCommon.getTempDir()).resolve("MongoStorage").toFile();
+            File tempDir = new File(reConfig.get("scratch"), "MongoStorage");
             FileUtils.deleteQuietly(tempDir);
             tempDir.mkdirs();
             try {
@@ -105,7 +104,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     public List<ConnectorStatus> getConnectorsStatus(AuthToken authPart,
             RpcContext jsonRpcContext) {
         checkAdmin(authPart);
-        throw new IllegalStateException("Method is not supported yet");
+        return Collections.emptyList();
     }
     
     @Override
