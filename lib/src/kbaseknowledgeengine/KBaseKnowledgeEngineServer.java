@@ -1,7 +1,6 @@
 package kbaseknowledgeengine;
 
 import java.io.File;
-import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,7 @@ import us.kbase.common.service.JsonServerSyslog;
 import us.kbase.common.service.RpcContext;
 
 //BEGIN_HEADER
+import java.net.URL;
 //END_HEADER
 
 /**
@@ -23,8 +23,8 @@ import us.kbase.common.service.RpcContext;
 public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.1";
-    private static final String gitUrl = "https://github.com/psnovichkov/KBaseKnowledgeEngine.git";
-    private static final String gitCommitHash = "78aa3b07a54f602d227d093607e6d8df75c636a7";
+    private static final String gitUrl = "https://github.com/rsutormin/KBaseKnowledgeEngine";
+    private static final String gitCommitHash = "14500a76668db6c73f38944d3890ee1263a57dcd";
 
     //BEGIN_CLASS_HEADER
     IKBaseKnowledgeEngine impl = null;  //new FakeKBaseKnowledgeEngine();
