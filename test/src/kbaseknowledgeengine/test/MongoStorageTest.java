@@ -31,6 +31,7 @@ public class MongoStorageTest {
     
     @Test
     public void testMain() throws Exception {
+        store.deleteAllAppJobs();
         Assert.assertEquals(0, store.getLastJobsPerApp().size());
         // app1
         AppJob job = new AppJob();

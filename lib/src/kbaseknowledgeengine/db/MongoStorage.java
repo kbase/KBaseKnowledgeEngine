@@ -24,11 +24,14 @@ public class MongoStorage {
 
     private DB mongo;
     private Jongo jongo;
+    private MongoCollection sysProps;
     private MongoCollection appJobs;
     private MongoCollection appScheds;
     
     private static final Map<String, MongoClient> HOSTS_TO_CLIENT = new HashMap<>();
 
+    public static final String COL_SYS_PROPS = "sys_props";
+    public static final String PK_SYS_PROPS = "prop";
     public static final String COL_APP_JOBS = "app_jobs";
     public static final String PK_APP_JOBS = "job_id";
     public static final String COL_APP_SCHEDS = "app_scheds";
@@ -39,12 +42,17 @@ public class MongoStorage {
     public static final String JOB_STATE_FINISHED = "finished";
     public static final String JOB_STATE_ERROR = "error";
     
+    public static final int DB_VERSION = 1;
+    public static final String PROP_DB_VERSION = "db_version";
+    
     public MongoStorage(String hosts, String db, String user, String pwd,
             Integer mongoReconnectRetry) throws MongoStorageException {
         try {
             mongo = getDB(hosts, db, user, pwd, mongoReconnectRetry == null ? 0 : 
                 mongoReconnectRetry, 10);
             jongo = new Jongo(mongo);
+            sysProps = jongo.getCollection(COL_SYS_PROPS);
+            sysProps.ensureIndex(String.format("{%s:1}", PK_SYS_PROPS), "{unique:true}");
             appJobs = jongo.getCollection(COL_APP_JOBS);
             appJobs.ensureIndex(String.format("{%s:1}", PK_APP_JOBS), "{unique:true}");
             appScheds = jongo.getCollection(COL_APP_SCHEDS);
@@ -52,6 +60,40 @@ public class MongoStorage {
         } catch (Exception e) {
             throw new MongoStorageException(e);
         }
+        try {
+            if (checkDbVersion() < DB_VERSION) {
+                setSysProp(PROP_DB_VERSION, String.valueOf(DB_VERSION));
+            }
+        } catch (MongoStorageException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new MongoStorageException(ex);
+        }
+    }
+    
+    public int checkDbVersion() throws MongoStorageException {
+        String storedDbVerText = getSysProp(PROP_DB_VERSION);
+        Integer storedDbVer = storedDbVerText == null ? null : Integer.parseInt(storedDbVerText);
+        if (storedDbVer != null && storedDbVer > DB_VERSION) {
+            throw new MongoStorageException("Mongo database containes future version: " + storedDbVer);
+        }
+        return storedDbVer == null ? 0 : storedDbVer;
+    }
+    
+    public String getSysProp(String prop) {
+        SysProp ret = sysProps.findOne(String.format("{%s:#}", PK_SYS_PROPS), prop).as(SysProp.class);
+        return ret == null ? null : ret.getValue();
+    }
+
+    public void setSysProp(String prop, String value) {
+        SysProp sp = new SysProp();
+        sp.setProp(prop);
+        sp.setValue(value);
+        appJobs.update(String.format("{%s:#}", PK_SYS_PROPS), prop).upsert().with(sp);
+    }
+
+    public void deleteAllAppJobs() {
+        appJobs.remove();
     }
     
     public void insertUpdateAppJob(AppJob job) {

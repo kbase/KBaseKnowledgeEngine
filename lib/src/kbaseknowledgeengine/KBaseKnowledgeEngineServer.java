@@ -1,6 +1,7 @@
 package kbaseknowledgeengine;
 
 import java.io.File;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,20 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final String gitCommitHash = "78aa3b07a54f602d227d093607e6d8df75c636a7";
 
     //BEGIN_CLASS_HEADER
-    IKBaseKnowledgeEngine impl = new FakeKBaseKnowledgeEngine();
+    IKBaseKnowledgeEngine impl = null;  //new FakeKBaseKnowledgeEngine();
     //END_CLASS_HEADER
 
     public KBaseKnowledgeEngineServer() throws Exception {
         super("KBaseKnowledgeEngine");
         //BEGIN_CONSTRUCTOR
+        String mongoHosts = config.get("mongo-hosts");
+        String mongoDb = config.get("mongo-db");
+        String mongoUser = config.get("mongo-user");
+        String mongoPassword = config.get("mongo-password");
+        URL executionEngineUrl = new URL(config.get("njsw-url"));
+        String admins = config.get("admins");
+        impl = new DBKBaseKnowledgeEngine(mongoHosts, mongoDb, mongoUser, mongoPassword, 
+                executionEngineUrl, admins, config);
         //END_CONSTRUCTOR
     }
 

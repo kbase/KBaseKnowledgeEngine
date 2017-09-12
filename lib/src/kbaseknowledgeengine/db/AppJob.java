@@ -11,6 +11,8 @@ public class AppJob {
     private String user;
     @JsonProperty("state")
     private String state;
+    @JsonProperty("message")
+    private String message;
     @JsonProperty("new_re_nodes")
     Integer newReNodes;
     @JsonProperty("updated_re_nodes")
@@ -62,6 +64,16 @@ public class AppJob {
     @JsonProperty("state")
     public void setState(String state) {
         this.state = state;
+    }
+    
+    @JsonProperty("message")
+    public String getMessage() {
+        return message;
+    }
+    
+    @JsonProperty("message")
+    public void setMessage(String message) {
+        this.message = message;
     }
     
     @JsonProperty("new_re_nodes")
