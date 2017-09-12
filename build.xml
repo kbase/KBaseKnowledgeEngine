@@ -36,6 +36,9 @@
     <include name="syslog4j/syslog4j-0.9.46.jar"/>
     <include name="kbase/workspace/WorkspaceClient-0.6.0.jar"/>
     <include name="apache_commons/commons-io-2.4.jar"/>
+    <include name="mongo/mongo-java-driver-2.13.3.jar"/>
+  	<include name="jongo/jongo-0.5-early-20130912-1506.jar"/>
+  	<include name="bson4jackson/bson4jackson-2.2.0-2.2.0.jar"/>
   </fileset>
 
   <path id="compile.classpath">
@@ -58,7 +61,7 @@ branch=${git.branch}
 commit=${git.commit}</echo>
     <!-- Compile class files-->
     <javac destdir="${classes}" includeantruntime="false"
-            target="1.7" source="1.7" debug="true"
+            target="1.8" source="1.8" debug="true"
             classpathref="compile.classpath" compiler="modern">
       <src refid="src.path"/>
     </javac>

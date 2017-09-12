@@ -1,0 +1,8 @@
+{
+    "app": "A2",
+    "module_method": "KEExpressionBiclusters.run_app",
+    "version_tag": "dev",
+    "title": "Expression: biclusters (HCL)",
+    "starting_from_date": "2017-09-01",
+    "regularity": "1M"
+}

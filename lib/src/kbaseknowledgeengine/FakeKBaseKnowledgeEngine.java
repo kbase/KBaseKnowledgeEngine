@@ -6,7 +6,7 @@ import java.util.List;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.RpcContext;
 
-public class FakeKBaseKnowledgeEngine {
+public class FakeKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
 	
 	static int jobId = 12346720;
 	static int STAT_CHANGE_TIME_DELAY = 5000;
@@ -145,16 +145,19 @@ public class FakeKBaseKnowledgeEngine {
 			.withScheduledEpochMs(Long.parseLong(vals[12]));        
     }
     
+    @Override
 	public List<ConnectorStatus> getConnectorsStatus(AuthToken authPart, RpcContext jsonRpcContext) {
 		return fakeConnectors;
 	}
 
 
+    @Override
 	public List<AppStatus> getAppsStatus(AuthToken authPart, RpcContext jsonRpcContext) {
 		return fakeApps;
 	}
 
 
+    @Override
 	public RunAppOutput runApp(RunAppParams params, AuthToken authPart, RpcContext jsonRpcContext) {
     	Long cms = System.currentTimeMillis();
 		
@@ -176,6 +179,7 @@ public class FakeKBaseKnowledgeEngine {
         return new RunAppOutput().withJobId("" + jobId);
 	}
 
+    @Override
 	public void testInit(AuthToken authPart, RpcContext jsonRpcContext) {
 		buildApps();
 	}

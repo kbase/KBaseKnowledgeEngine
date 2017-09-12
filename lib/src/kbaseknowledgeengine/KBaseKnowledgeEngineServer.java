@@ -1,6 +1,7 @@
 package kbaseknowledgeengine;
 
 import java.io.File;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,20 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final String gitCommitHash = "78aa3b07a54f602d227d093607e6d8df75c636a7";
 
     //BEGIN_CLASS_HEADER
-    FakeKBaseKnowledgeEngine fakeImpl = new FakeKBaseKnowledgeEngine();
+    IKBaseKnowledgeEngine impl = null;  //new FakeKBaseKnowledgeEngine();
     //END_CLASS_HEADER
 
     public KBaseKnowledgeEngineServer() throws Exception {
         super("KBaseKnowledgeEngine");
         //BEGIN_CONSTRUCTOR
+        String mongoHosts = config.get("mongo-hosts");
+        String mongoDb = config.get("mongo-db");
+        String mongoUser = config.get("mongo-user");
+        String mongoPassword = config.get("mongo-password");
+        URL executionEngineUrl = new URL(config.get("njsw-url"));
+        String admins = config.get("admins");
+        impl = new DBKBaseKnowledgeEngine(mongoHosts, mongoDb, mongoUser, mongoPassword, 
+                executionEngineUrl, admins, config);
         //END_CONSTRUCTOR
     }
 
@@ -45,7 +54,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public List<ConnectorStatus> getConnectorsStatus(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         List<ConnectorStatus> returnVal = null;
         //BEGIN getConnectorsStatus
-        returnVal = fakeImpl.getConnectorsStatus(authPart, jsonRpcContext);
+        returnVal = impl.getConnectorsStatus(authPart, jsonRpcContext);
         //END getConnectorsStatus
         return returnVal;
     }
@@ -60,7 +69,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public List<AppStatus> getAppsStatus(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         List<AppStatus> returnVal = null;
         //BEGIN getAppsStatus
-        returnVal = fakeImpl.getAppsStatus(authPart, jsonRpcContext);
+        returnVal = impl.getAppsStatus(authPart, jsonRpcContext);
         //END getAppsStatus
         return returnVal;
     }
@@ -77,7 +86,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public RunAppOutput runApp(RunAppParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         RunAppOutput returnVal = null;
         //BEGIN runApp
-        returnVal = fakeImpl.runApp(params, authPart, jsonRpcContext);
+        returnVal = impl.runApp(params, authPart, jsonRpcContext);
         //END runApp
         return returnVal;
     }
@@ -91,7 +100,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.testInit", async=true)
     public void testInit(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         //BEGIN testInit
-    	fakeImpl.testInit(authPart, jsonRpcContext);
+    	impl.testInit(authPart, jsonRpcContext);
         //END testInit
     }
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.status")
