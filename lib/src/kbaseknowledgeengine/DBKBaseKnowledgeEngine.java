@@ -3,7 +3,6 @@ package kbaseknowledgeengine;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,11 +11,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
 import kbaseknowledgeengine.cfg.AppConfig;
-import kbaseknowledgeengine.cfg.AppConfigLoader;
+import kbaseknowledgeengine.cfg.ExecConfigLoader;
 import kbaseknowledgeengine.db.AppJob;
 import kbaseknowledgeengine.db.MongoStorage;
 import kbaseknowledgeengine.db.MongoStorageException;
@@ -43,7 +44,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             Map<String, String> reConfig) throws MongoStorageException, IOException {
         if (mongoHosts == null || mongoHosts.trim().length() == 0) {
             // Startup internal Mongo
-            File tempDir = new File(reConfig.get("scratch"), "MongoStorage");
+            /*File tempDir = new File(reConfig.get("scratch"), "MongoStorage");
             FileUtils.deleteQuietly(tempDir);
             tempDir.mkdirs();
             try {
@@ -54,10 +55,13 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                 }
             } catch (Exception e) {
                 throw new MongoStorageException(e);
-            }
+            }*/
+            throw new MongoStorageException("Mongo host is not set in secure config parameters");
         }
         store = new MongoStorage(mongoHosts, mongoDb, mongoUser, mongoPassword, null);
-        appConfigs = AppConfigLoader.loadAppConfigs();
+        List<AppConfig> appCfgList = ExecConfigLoader.loadAppConfigs();
+        appConfigs = appCfgList.stream().collect(Collectors.toMap(item -> item.getApp(), 
+                Function.identity()));
         this.executionEngineUrl = executionEngineUrl;
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
         this.reConfig = reConfig;
