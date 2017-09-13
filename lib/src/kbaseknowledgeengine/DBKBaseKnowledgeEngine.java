@@ -1,6 +1,5 @@
 package kbaseknowledgeengine;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,8 +13,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-
 import kbaseknowledgeengine.cfg.AppConfig;
 import kbaseknowledgeengine.cfg.ExecConfigLoader;
 import kbaseknowledgeengine.db.AppJob;
@@ -24,7 +21,6 @@ import kbaseknowledgeengine.db.MongoStorageException;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.RpcContext;
 import us.kbase.common.service.UObject;
-import us.kbase.common.test.controllers.mongo.MongoController;
 import us.kbase.narrativejobservice.JobState;
 import us.kbase.narrativejobservice.NarrativeJobServiceClient;
 import us.kbase.narrativejobservice.RunJobParams;
