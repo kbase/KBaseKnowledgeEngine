@@ -33,7 +33,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     public KBaseKnowledgeEngineServer() throws Exception {
         super("KBaseKnowledgeEngine");
         //BEGIN_CONSTRUCTOR
-        String mongoHosts = config.get("mongo-hosts");
+        String mongoHosts = config.get("mongo-host");
         String mongoDb = config.get("mongo-db");
         String mongoUser = config.get("mongo-user");
         String mongoPassword = config.get("mongo-password");
