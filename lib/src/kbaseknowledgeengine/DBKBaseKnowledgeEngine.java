@@ -54,7 +54,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             }*/
             throw new MongoStorageException("Mongo host is not set in secure config parameters");
         }
-        System.out.println("DEBUG: Mongo-host=" + mongoHosts);
         store = new MongoStorage(mongoHosts, mongoDb, mongoUser, mongoPassword, null);
         List<AppConfig> appCfgList = ExecConfigLoader.loadAppConfigs();
         appConfigs = appCfgList.stream().collect(Collectors.toMap(item -> item.getApp(), 
