@@ -14,10 +14,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import kbaseknowledgeengine.cfg.AppConfig;
+import kbaseknowledgeengine.cfg.ConnectorConfig;
 import kbaseknowledgeengine.cfg.ExecConfigLoader;
 import kbaseknowledgeengine.db.AppJob;
 import kbaseknowledgeengine.db.MongoStorage;
 import kbaseknowledgeengine.db.MongoStorageException;
+import kbaseknowledgeengine.db.WSEvent;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.RpcContext;
 import us.kbase.common.service.UObject;
@@ -32,6 +34,8 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final Set<String> admins;
     private final Map<String, String> reConfig;
     private final Set<Thread> monitors = Collections.synchronizedSet(new HashSet<>());
+    private final WSEventProcessor eventProcessor;
+    private final Map<String, List<ConnectorConfig>> storageTypeToConnectorCfg;
     
     public static final String MONGOEXE_DEFAULT = "/opt/mongo/bin/mongod";
     
@@ -39,19 +43,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             String mongoPassword, URL executionEngineUrl, String admins,
             Map<String, String> reConfig) throws MongoStorageException, IOException {
         if (mongoHosts == null || mongoHosts.trim().length() == 0) {
-            // Startup internal Mongo
-            /*File tempDir = new File(reConfig.get("scratch"), "MongoStorage");
-            FileUtils.deleteQuietly(tempDir);
-            tempDir.mkdirs();
-            try {
-                MongoController mongo = new MongoController(MONGOEXE_DEFAULT, tempDir.toPath());
-                mongoHosts = "localhost:" + mongo.getServerPort();
-                if (mongoDb == null || mongoDb.trim().length() == 0) {
-                    mongoDb = "db_" + System.currentTimeMillis();
-                }
-            } catch (Exception e) {
-                throw new MongoStorageException(e);
-            }*/
             throw new MongoStorageException("Mongo host is not set in secure config parameters");
         }
         store = new MongoStorage(mongoHosts, mongoDb, mongoUser, mongoPassword, null);
@@ -61,6 +52,9 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         this.executionEngineUrl = executionEngineUrl;
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
         this.reConfig = reConfig;
+        eventProcessor = new WSEventProcessor(store);
+        storageTypeToConnectorCfg = ExecConfigLoader.loadConnectorConfigs().stream()
+                .collect(Collectors.groupingBy(ConnectorConfig::getWorkspaceType));
     }
 	
     private void checkAdmin(AuthToken auth) {
@@ -104,7 +98,18 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     public List<ConnectorStatus> getConnectorsStatus(AuthToken authPart,
             RpcContext jsonRpcContext) {
         checkAdmin(authPart);
-        return Collections.emptyList();
+        List<WSEvent> events = eventProcessor.loadEvents();
+        List<ConnectorStatus> ret = new ArrayList<>();
+        for (WSEvent evt : events) {
+            String objRef = "" + evt.accessGroupId + "/" + evt.accessGroupObjectId + "/" +
+                    evt.version;
+            ConnectorConfig cfg = storageTypeToConnectorCfg.get(evt.storageObjectType).get(0);
+            ConnectorStatus cs = new ConnectorStatus().withConnectorApp(cfg.getConnectorApp())
+                    .withConnectorTitle(cfg.getTitle()).withObjRef(objRef)
+                    .withObjType(evt.storageObjectType).withUser("owner");
+            ret.add(cs);
+        }
+        return ret;
     }
     
     @Override
