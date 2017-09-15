@@ -27,6 +27,7 @@ public class MongoStorage {
     private MongoCollection sysProps;
     private MongoCollection appJobs;
     private MongoCollection appScheds;
+    private MongoCollection wsEvents;
     
     private static final Map<String, MongoClient> HOSTS_TO_CLIENT = new HashMap<>();
 
@@ -36,6 +37,7 @@ public class MongoStorage {
     public static final String PK_APP_JOBS = "job_id";
     public static final String COL_APP_SCHEDS = "app_scheds";
     public static final String PK_APP_SCHEDS = "app";
+    public static final String COL_EVENTS = "KEObjectEvents";
     
     public static final String JOB_STATE_QUEUED = "queued";
     public static final String JOB_STATE_STARTED = "started";
@@ -57,6 +59,7 @@ public class MongoStorage {
             appJobs.ensureIndex(String.format("{%s:1}", PK_APP_JOBS), "{unique:true}");
             appScheds = jongo.getCollection(COL_APP_SCHEDS);
             appScheds.ensureIndex(String.format("{%s:1}", PK_APP_SCHEDS), "{unique:true}");
+            wsEvents = jongo.getCollection(COL_EVENTS);
         } catch (Exception e) {
             throw new MongoStorageException(e);
         }
@@ -137,6 +140,10 @@ public class MongoStorage {
         return ret;
     }
 
+    public List<WSEvent> loadUnprocessedEvents() {
+        return asList(wsEvents.find().as(WSEvent.class));
+    }
+    
     private static <T> List<T> asList(Iterable<T> iter) {
         List<T> ret = new ArrayList<T>();
         for (T item : iter) {

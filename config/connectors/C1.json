@@ -1,0 +1,7 @@
+{
+    "connector_app": "C1",
+    "module_method": "KEHomologyConnector.run",
+    "version_tag": "dev",
+    "title": "Genome Homology Connector",
+    "workspace_type": "KBaseGenomes.Genome"
+}

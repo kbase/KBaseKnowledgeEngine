@@ -3,8 +3,8 @@ package kbaseknowledgeengine.cfg;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ConnectorConfig {
-    @JsonProperty("connector")
-    private String connector;
+    @JsonProperty("connector_app")
+    private String connectorApp;
     @JsonProperty("module_method")
     private String moduleMethod;
     @JsonProperty("version_tag")
@@ -14,14 +14,14 @@ public class ConnectorConfig {
     @JsonProperty("workspace_type")
     private String workspaceType;
 
-    @JsonProperty("connector")
-    public String getConnector() {
-        return connector;
+    @JsonProperty("connector_app")
+    public String getConnectorApp() {
+        return connectorApp;
     }
     
-    @JsonProperty("connector")
-    public void setConnector(String connector) {
-        this.connector = connector;
+    @JsonProperty("connector_app")
+    public void setConnectorApp(String connectorApp) {
+        this.connectorApp = connectorApp;
     }
     
     @JsonProperty("module_method")
