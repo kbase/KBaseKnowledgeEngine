@@ -26,7 +26,7 @@ public class MongoStorage {
     private Jongo jongo;
     private MongoCollection sysProps;
     private MongoCollection appJobs;
-    private MongoCollection appScheds;
+    private MongoCollection connJobs;
     private MongoCollection wsEvents;
     
     private static final Map<String, MongoClient> HOSTS_TO_CLIENT = new HashMap<>();
@@ -35,8 +35,8 @@ public class MongoStorage {
     public static final String PK_SYS_PROPS = "prop";
     public static final String COL_APP_JOBS = "app_jobs";
     public static final String PK_APP_JOBS = "job_id";
-    public static final String COL_APP_SCHEDS = "app_scheds";
-    public static final String PK_APP_SCHEDS = "app";
+    public static final String COL_CONN_JOBS = "conn_jobs";
+    public static final String PK_CONN_JOBS = "job_id";
     public static final String COL_EVENTS = "KEObjectEvents";
     
     public static final String JOB_STATE_QUEUED = "queued";
@@ -57,9 +57,11 @@ public class MongoStorage {
             sysProps.ensureIndex(String.format("{%s:1}", PK_SYS_PROPS), "{unique:true}");
             appJobs = jongo.getCollection(COL_APP_JOBS);
             appJobs.ensureIndex(String.format("{%s:1}", PK_APP_JOBS), "{unique:true}");
-            appScheds = jongo.getCollection(COL_APP_SCHEDS);
-            appScheds.ensureIndex(String.format("{%s:1}", PK_APP_SCHEDS), "{unique:true}");
+            connJobs = jongo.getCollection(COL_CONN_JOBS);
+            connJobs.ensureIndex(String.format("{%s:1}", PK_CONN_JOBS), "{unique:true}");
             wsEvents = jongo.getCollection(COL_EVENTS);
+            wsEvents.ensureIndex(String.format("{%s:1,%s:1,%s:1,%s:1,%s:1}", "accessGroupId",
+                    "accessGroupObjectId", "version", "timestamp", "eventType"), "{unique:true}");
         } catch (Exception e) {
             throw new MongoStorageException(e);
         }
@@ -140,8 +142,22 @@ public class MongoStorage {
         return ret;
     }
 
+    public List<ConnJob> loadAllConnJobs() {
+        return asList(connJobs.find().as(ConnJob.class));
+    }
+
+    public void insertUpdateConnJob(ConnJob job) {
+        connJobs.update(String.format("{%s:#}", "job_id"), job.getJobId()).upsert().with(job);
+    }
+
     public List<WSEvent> loadUnprocessedEvents() {
-        return asList(wsEvents.find().as(WSEvent.class));
+        return asList(wsEvents.find(String.format("{%s:#}", "processed"), false).as(WSEvent.class));
+    }
+    
+    public void updateEvent(WSEvent evt) {
+        wsEvents.update(String.format("{%s:1,%s:1,%s:1,%s:1,%s:1}", "accessGroupId",
+                    "accessGroupObjectId", "version", "timestamp", "eventType"), evt.accessGroupId,
+                evt.accessGroupObjectId, evt.version, evt.timestamp, evt.eventType).with(evt);
     }
     
     private static <T> List<T> asList(Iterable<T> iter) {

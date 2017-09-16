@@ -17,6 +17,8 @@ import kbaseknowledgeengine.cfg.AppConfig;
 import kbaseknowledgeengine.cfg.ConnectorConfig;
 import kbaseknowledgeengine.cfg.ExecConfigLoader;
 import kbaseknowledgeengine.db.AppJob;
+import kbaseknowledgeengine.db.ConnJob;
+import kbaseknowledgeengine.db.IJob;
 import kbaseknowledgeengine.db.MongoStorage;
 import kbaseknowledgeengine.db.MongoStorageException;
 import kbaseknowledgeengine.db.WSEvent;
@@ -32,7 +34,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final Map<String, AppConfig> appConfigs;
     private final URL executionEngineUrl;
     private final Set<String> admins;
-    private final Map<String, String> reConfig;
     private final Set<Thread> monitors = Collections.synchronizedSet(new HashSet<>());
     private final WSEventProcessor eventProcessor;
     private final Map<String, List<ConnectorConfig>> storageTypeToConnectorCfg;
@@ -41,7 +42,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     
     public DBKBaseKnowledgeEngine(String mongoHosts, String mongoDb, String mongoUser,
             String mongoPassword, URL executionEngineUrl, String admins,
-            Map<String, String> reConfig) throws MongoStorageException, IOException {
+            Map<String, String> srvConfig) throws MongoStorageException, IOException {
         if (mongoHosts == null || mongoHosts.trim().length() == 0) {
             throw new MongoStorageException("Mongo host is not set in secure config parameters");
         }
@@ -51,7 +52,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                 Function.identity()));
         this.executionEngineUrl = executionEngineUrl;
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
-        this.reConfig = reConfig;
         eventProcessor = new WSEventProcessor(store);
         storageTypeToConnectorCfg = ExecConfigLoader.loadConnectorConfigs().stream()
                 .collect(Collectors.groupingBy(ConnectorConfig::getWorkspaceType));
@@ -133,9 +133,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             njs.setAllSSLCertificatesTrusted(true);
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
-            jobParams.put("re_url", reConfig.get("re-url"));
-            jobParams.put("re_user", reConfig.get("re-user"));
-            jobParams.put("re_password", reConfig.get("re-password"));
+            jobParams.put("app_id", cfg.getApp());
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
                             new UObject(jobParams))));
@@ -146,7 +144,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             job.setState(MongoStorage.JOB_STATE_QUEUED);
             job.setUser(authPart.getUserName());
             store.insertUpdateAppJob(job);
-            startBackgroundMonitor(njs, jobId);
+            startBackgroundMonitor(njs, job);
             return new RunAppOutput().withJobId(jobId);
         } catch (Exception e) {
             throw new IllegalStateException("Error running app [" + app + "]: " + 
@@ -155,12 +153,12 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     }
     
     private Thread startBackgroundMonitor(final NarrativeJobServiceClient njs, 
-            final String jobId) {
+            final IJob job) {
+        final String jobId = job.getJobId();
         Thread ret = new Thread(new Runnable() {
             @SuppressWarnings({ "unchecked", "rawtypes" })
             @Override
             public void run() {
-                AppJob job = store.loadAppJob(jobId);
                 while (true) {
                     try {
                         Thread.sleep(5000);
@@ -213,7 +211,11 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                         toBreak = true;
                     }
                     if (toUpdate) {
-                        store.insertUpdateAppJob(job);
+                        if (job instanceof AppJob) {
+                            store.insertUpdateAppJob((AppJob)job);
+                        } else if (job instanceof ConnJob) {
+                            store.insertUpdateConnJob((ConnJob)job);
+                        }
                     }
                     if (toBreak) {
                         break;
