@@ -2,11 +2,13 @@ package kbaseknowledgeengine.db;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class AppJob implements IJob {
+public class ConnJob implements IJob {
     @JsonProperty("job_id")
     private String jobId;
-    @JsonProperty("app")
-    private String app;
+    @JsonProperty("connector_app")
+    private String connectorApp;
+    @JsonProperty("obj_ref")
+    private String objRef;
     @JsonProperty("user")
     private String user;
     @JsonProperty("state")
@@ -36,14 +38,24 @@ public class AppJob implements IJob {
         this.jobId = jobId;
     }
     
-    @JsonProperty("app")
-    public String getApp() {
-        return app;
+    @JsonProperty("connector_app")
+    public String getConnectorApp() {
+        return connectorApp;
     }
     
-    @JsonProperty("app")
-    public void setApp(String app) {
-        this.app = app;
+    @JsonProperty("connector_app")
+    public void setConnectorApp(String connectorApp) {
+        this.connectorApp = connectorApp;
+    }
+    
+    @JsonProperty("obj_ref")
+    public String getObjRef() {
+        return objRef;
+    }
+    
+    @JsonProperty("obj_ref")
+    public void setObjRef(String objRef) {
+        this.objRef = objRef;
     }
     
     @JsonProperty("user")
