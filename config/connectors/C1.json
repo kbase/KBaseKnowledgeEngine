@@ -1,6 +1,6 @@
 {
     "connector_app": "C1",
-    "module_method": "KEHomologyConnector.run",
+    "module_method": "onerepotest.send_data",
     "version_tag": "dev",
     "title": "Genome Homology Connector",
     "workspace_type": "KBaseGenomes.Genome"

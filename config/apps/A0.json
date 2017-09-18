@@ -1,8 +1,0 @@
-{
-    "app": "A0",
-    "module_method": "onerepotest.send_data",
-    "version_tag": "dev",
-    "title": "Test Module",
-    "starting_from_date": "2017-09-01",
-    "regularity": "1M"
-}
