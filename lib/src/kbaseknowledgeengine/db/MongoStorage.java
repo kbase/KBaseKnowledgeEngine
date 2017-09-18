@@ -155,7 +155,7 @@ public class MongoStorage {
     }
     
     public void updateEvent(WSEvent evt) {
-        wsEvents.update(String.format("{%s:1,%s:1,%s:1,%s:1,%s:1}", "accessGroupId",
+        wsEvents.update(String.format("{%s:#,%s:#,%s:#,%s:#,%s:#}", "accessGroupId",
                     "accessGroupObjectId", "version", "timestamp", "eventType"), evt.accessGroupId,
                 evt.accessGroupObjectId, evt.version, evt.timestamp, evt.eventType).with(evt);
     }
