@@ -156,7 +156,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             njs.setAllSSLCertificatesTrusted(true);
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
-            jobParams.put("app_id", cfg.getApp());
+            jobParams.put("app_guid", cfg.getApp());
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
                             new UObject(jobParams))));
@@ -184,15 +184,19 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             // Let's check first that we still can change Mongo database (there is no newer version
             // of service working in parallel).
             store.checkDbVersion();
-            NarrativeJobServiceClient njs = new NarrativeJobServiceClient(executionEngineUrl, keAdminToken);
+            NarrativeJobServiceClient njs = new NarrativeJobServiceClient(executionEngineUrl, 
+                    keAdminToken);
             njs.setAllSSLCertificatesTrusted(true);
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
-            jobParams.put("connector_id", cfg.getConnectorApp());
+            jobParams.put("app_guid", cfg.getConnectorApp());
+            jobParams.put("obj_ref", evt.accessGroupId + "/" + evt.accessGroupObjectId + "/" + 
+            evt.version);
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
                             new UObject(jobParams))));
-            System.out.println("Runnng connector [" + cfg.getConnectorApp() + "] with job id=" + jobId);
+            System.out.println("Runnng connector [" + cfg.getConnectorApp() + "] with job id=" + 
+                            jobId);
             job.setJobId(jobId);
             job.setQueuedEpochMs(System.currentTimeMillis());
             job.setState(MongoStorage.JOB_STATE_QUEUED);
