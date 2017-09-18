@@ -32,17 +32,22 @@ import us.kbase.narrativejobservice.RunJobParams;
 public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final MongoStorage store;
     private final Map<String, AppConfig> appConfigs;
+    private final Map<String, ConnectorConfig> connConfigs;
     private final URL executionEngineUrl;
     private final Set<String> admins;
     private final Set<Thread> monitors = Collections.synchronizedSet(new HashSet<>());
     private final WSEventProcessor eventProcessor;
     private final Map<String, List<ConnectorConfig>> storageTypeToConnectorCfg;
+    private final AuthToken keAdminToken;
+    
+    private int connectorJobs = 0;
     
     public static final String MONGOEXE_DEFAULT = "/opt/mongo/bin/mongod";
     
     public DBKBaseKnowledgeEngine(String mongoHosts, String mongoDb, String mongoUser,
             String mongoPassword, URL executionEngineUrl, String admins,
-            Map<String, String> srvConfig) throws MongoStorageException, IOException {
+            Map<String, String> srvConfig, AuthToken keAdminToken) 
+                    throws MongoStorageException, IOException {
         if (mongoHosts == null || mongoHosts.trim().length() == 0) {
             throw new MongoStorageException("Mongo host is not set in secure config parameters");
         }
@@ -50,13 +55,32 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         List<AppConfig> appCfgList = ExecConfigLoader.loadAppConfigs();
         appConfigs = appCfgList.stream().collect(Collectors.toMap(item -> item.getApp(), 
                 Function.identity()));
+        List<ConnectorConfig> connCfgList = ExecConfigLoader.loadConnectorConfigs();
+        connConfigs = connCfgList.stream().collect(Collectors.toMap(item -> item.getConnectorApp(),
+                Function.identity()));
+        storageTypeToConnectorCfg = connCfgList.stream()
+                .collect(Collectors.groupingBy(ConnectorConfig::getWorkspaceType));
         this.executionEngineUrl = executionEngineUrl;
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
-        eventProcessor = new WSEventProcessor(store);
-        storageTypeToConnectorCfg = ExecConfigLoader.loadConnectorConfigs().stream()
-                .collect(Collectors.groupingBy(ConnectorConfig::getWorkspaceType));
+        this.keAdminToken = keAdminToken;
+        eventProcessor = new WSEventProcessor(store, new WSEventProcessor.WSEventListener() {
+            
+            @Override
+            public void objectVersionCreated(WSEvent evt) {
+                if (connectorJobs > 0) {
+                    return;  // Temporary ignore all except first event
+                }
+                connectorJobs++;
+                evt.processed = true;
+                store.updateEvent(evt);
+            }
+        });
     }
 	
+    public void stopEventProcessor() {
+        eventProcessor.stopWatcher();
+    }
+    
     private void checkAdmin(AuthToken auth) {
         if (!admins.contains(auth.getUserName())) {
             throw new IllegalStateException("Only admin can preform this operation");
@@ -98,15 +122,14 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     public List<ConnectorStatus> getConnectorsStatus(AuthToken authPart,
             RpcContext jsonRpcContext) {
         checkAdmin(authPart);
-        List<WSEvent> events = eventProcessor.loadEvents();
+        List<ConnJob> jobs = store.loadAllConnJobs();
         List<ConnectorStatus> ret = new ArrayList<>();
-        for (WSEvent evt : events) {
-            String objRef = "" + evt.accessGroupId + "/" + evt.accessGroupObjectId + "/" +
-                    evt.version;
-            ConnectorConfig cfg = storageTypeToConnectorCfg.get(evt.storageObjectType).get(0);
+        for (ConnJob job : jobs) {
+            ConnectorConfig cfg = connConfigs.get(job.getConnectorApp());
+            String objRef = job.getObjRef();
             ConnectorStatus cs = new ConnectorStatus().withConnectorApp(cfg.getConnectorApp())
                     .withConnectorTitle(cfg.getTitle()).withObjRef(objRef)
-                    .withObjType(evt.storageObjectType).withUser("owner");
+                    .withObjType(cfg.getWorkspaceType()).withUser(job.getUser());
             ret.add(cs);
         }
         return ret;
@@ -133,10 +156,11 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             njs.setAllSSLCertificatesTrusted(true);
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
-            jobParams.put("app_id", cfg.getApp());
+            jobParams.put("app_guid", cfg.getApp());
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
                             new UObject(jobParams))));
+            System.out.println("Runnng app [" + app + "] with job id=" + jobId);
             job = new AppJob();
             job.setApp(app);
             job.setJobId(jobId);
@@ -152,6 +176,39 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         }
     }
     
+    public void runConnector(WSEvent evt) {
+        ConnectorConfig cfg = storageTypeToConnectorCfg.get(evt.storageObjectType).get(0);
+        try {
+            ConnJob job = new ConnJob();
+            job.setConnectorApp(cfg.getConnectorApp());
+            // Let's check first that we still can change Mongo database (there is no newer version
+            // of service working in parallel).
+            store.checkDbVersion();
+            NarrativeJobServiceClient njs = new NarrativeJobServiceClient(executionEngineUrl, 
+                    keAdminToken);
+            njs.setAllSSLCertificatesTrusted(true);
+            njs.setIsInsecureHttpConnectionAllowed(true);
+            Map<String, String> jobParams = new HashMap<>();
+            jobParams.put("app_guid", cfg.getConnectorApp());
+            jobParams.put("obj_ref", evt.accessGroupId + "/" + evt.accessGroupObjectId + "/" + 
+            evt.version);
+            String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
+                    .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
+                            new UObject(jobParams))));
+            System.out.println("Runnng connector [" + cfg.getConnectorApp() + "] with job id=" + 
+                            jobId);
+            job.setJobId(jobId);
+            job.setQueuedEpochMs(System.currentTimeMillis());
+            job.setState(MongoStorage.JOB_STATE_QUEUED);
+            job.setUser("<owner>");
+            store.insertUpdateConnJob(job);
+            startBackgroundMonitor(njs, job);
+        } catch (Exception e) {
+            System.out.println("Error running connector [" + cfg.getConnectorApp() + "]: " + 
+                    e.getMessage());
+        }
+    }
+
     private Thread startBackgroundMonitor(final NarrativeJobServiceClient njs, 
             final IJob job) {
         final String jobId = job.getJobId();
@@ -205,6 +262,8 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                             }
                         }
                     } catch (Exception e) {
+                        System.out.println("Error checking job state for [" + job.getJobId() + "]:");
+                        e.printStackTrace(System.out);
                         job.setState(MongoStorage.JOB_STATE_ERROR);
                         job.setMessage("Error monitoring job: " + e.getMessage());
                         toUpdate = true;

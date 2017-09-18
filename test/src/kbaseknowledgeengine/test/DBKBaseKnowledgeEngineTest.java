@@ -46,7 +46,7 @@ public class DBKBaseKnowledgeEngineTest {
         token = TestCommon.getToken(authService);
         engine = new DBKBaseKnowledgeEngine("localhost:" + mongo.getServerPort(), 
                 "test_" + System.currentTimeMillis(), null, null, eeUrl, token.getUserName(),
-                config);
+                config, null);
     }
     
     private static Map<String, String> getConfig(final String serviceName) throws Exception {
@@ -95,6 +95,7 @@ public class DBKBaseKnowledgeEngineTest {
     
     @AfterClass
     public static void tearDown() throws Exception {
+        engine.stopEventProcessor();
         final boolean deleteTempFiles = TestCommon.getDeleteTempFiles();
         if (mongo != null) {
             mongo.destroy(deleteTempFiles);

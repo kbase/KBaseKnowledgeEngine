@@ -39,8 +39,13 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
         String mongoPassword = config.get("mongo-password");
         URL executionEngineUrl = new URL(config.get("njsw-url"));
         String admins = config.get("admins");
+        String keAdminTokenString = config.get("ke-admin-token");
+        if (keAdminTokenString == null) {
+            throw new IllegalStateException("ke-admin-token is not defined in configuration");
+        }
+        AuthToken keAdminToken = new AuthToken(keAdminTokenString, "<unknown>");
         impl = new DBKBaseKnowledgeEngine(mongoHosts, mongoDb, mongoUser, mongoPassword, 
-                executionEngineUrl, admins, config);
+                executionEngineUrl, admins, config, keAdminToken);
         //END_CONSTRUCTOR
     }
 
