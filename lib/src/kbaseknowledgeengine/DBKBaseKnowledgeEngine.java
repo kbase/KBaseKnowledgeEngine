@@ -135,7 +135,14 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             String objRef = job.getObjRef();
             ConnectorStatus cs = new ConnectorStatus().withConnectorApp(cfg.getConnectorApp())
                     .withConnectorTitle(cfg.getTitle()).withObjRef(objRef)
-                    .withObjType(cfg.getWorkspaceType()).withUser(job.getUser());
+                    .withObjType(cfg.getWorkspaceType()).withUser(job.getUser())
+                    .withOutput(job.getMessage()).withState(job.getState())
+                    .withNewReNodes(asLong(job.getNewReNodes()))
+                    .withUpdatedReNodes(asLong(job.getUpdatedReNodes()))
+                    .withNewReLinks(asLong(job.getNewReLinks()))
+                    .withQueuedEpochMs(job.getQueuedEpochMs())
+                    .withStartedEpochMs(job.getStartedEpochMs())
+                    .withFinishedEpochMs(job.getFinishedEpochMs());
             ret.add(cs);
         }
         return ret;
@@ -201,7 +208,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
                             new UObject(jobParams))));
-            System.out.println("Runnng connector [" + cfg.getConnectorApp() + "] with job id=" + 
+            System.out.println("Runnig connector [" + cfg.getConnectorApp() + "] with job id=" + 
                             jobId);
             job.setJobId(jobId);
             job.setObjRef(objRef);
@@ -242,14 +249,22 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                             if (js.getError() != null) {
                                 job.setState(MongoStorage.JOB_STATE_ERROR);
                                 job.setMessage(js.getError().getMessage());
+                                System.out.println("Job " + jobId + " failed, error: " + 
+                                job.getMessage());
                             } else {
                                 job.setState(MongoStorage.JOB_STATE_FINISHED);
-                                List<Object> retArr = UObject.transformObjectToObject(js.getResult(), List.class);
+                                System.out.println("Job " + jobId + " is done");
+                                List<Object> retArr = UObject.transformObjectToObject(
+                                        js.getResult(), List.class);
                                 Map<String, Object> retMap = (Map)retArr.get(0); 
                                 job.setNewReNodes(asInteger((Long)retMap.get("new_re_nodes")));
-                                job.setUpdatedReNodes(asInteger((Long)retMap.get("updated_re_nodes")));
+                                job.setUpdatedReNodes(asInteger(
+                                        (Long)retMap.get("updated_re_nodes")));
                                 job.setNewReLinks(asInteger((Long)retMap.get("new_re_links")));
                                 job.setMessage((String)retMap.get("message"));
+                                System.out.println("New-nodes: " + job.getNewReNodes() + ", " +
+                                        "updated-nodes: " + job.getUpdatedReNodes() + ", " + 
+                                        "new-links: " + job.getNewReLinks());
                             }
                             if (job.getStartedEpochMs() == null) {
                                 job.setStartedEpochMs(js.getExecStartTime());
@@ -269,7 +284,8 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                             }
                         }
                     } catch (Exception e) {
-                        System.out.println("Error checking job state for [" + job.getJobId() + "]:");
+                        System.out.println("Error checking job state for " + 
+                                "[" + job.getJobId() + "]:");
                         e.printStackTrace(System.out);
                         job.setState(MongoStorage.JOB_STATE_ERROR);
                         job.setMessage("Error monitoring job: " + e.getMessage());
@@ -281,6 +297,9 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                             store.insertUpdateAppJob((AppJob)job);
                         } else if (job instanceof ConnJob) {
                             store.insertUpdateConnJob((ConnJob)job);
+                        } else {
+                            throw new IllegalStateException("Unsupported job type: " + 
+                                    job.getClass().getSimpleName());
                         }
                     }
                     if (toBreak) {
