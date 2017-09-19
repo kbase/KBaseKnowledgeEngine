@@ -73,15 +73,27 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     }
     
     protected void objectVersionCreated(WSEvent evt) {
-        System.out.println("WSEventProcessor->DBKBaseKnowledgeEngine: " + evt);
         evt.processed = true;
-        store.updateEvent(evt);
+        updateEvent(evt);
         if (connectorJobs > 0) {
             // Temporary ignore all except first event
             return;
         }
         connectorJobs++;
         runConnector(evt);
+    }
+    
+    private void updateEvent(WSEvent evt) {
+        try {
+            store.updateEvent(evt);
+            WSEvent evt2 = store.loadEvent(evt.accessGroupId, evt.accessGroupObjectId, 
+                    evt.version, evt.timestamp, evt.eventType);
+            if (!evt.equals(evt2)) {
+                throw new IllegalStateException("Event wasn't stored properly");
+            }
+        } catch (Exception e) {
+            System.out.println("Error updating event: " + e.getMessage());
+        }
     }
     
     private static String getObjRef(WSEvent evt) {
