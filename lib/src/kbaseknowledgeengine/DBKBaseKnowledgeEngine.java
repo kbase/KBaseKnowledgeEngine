@@ -67,14 +67,13 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             
             @Override
             public void objectVersionCreated(WSEvent evt) {
+                evt.processed = true;
+                store.updateEvent(evt);
                 if (connectorJobs > 0) {
                     // Temporary ignore all except first event
-                    System.out.println("WSEvent for obj-ref=" + getObjRef(evt) + " was skipped");
                     return;
                 }
                 connectorJobs++;
-                evt.processed = true;
-                store.updateEvent(evt);
                 runConnector(evt);
             }
         });
@@ -197,14 +196,15 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
             jobParams.put("app_guid", cfg.getConnectorApp());
-            jobParams.put("obj_ref", evt.accessGroupId + "/" + evt.accessGroupObjectId + "/" + 
-            evt.version);
+            String objRef = getObjRef(evt);
+            jobParams.put("obj_ref", objRef);
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
                             new UObject(jobParams))));
             System.out.println("Runnng connector [" + cfg.getConnectorApp() + "] with job id=" + 
                             jobId);
             job.setJobId(jobId);
+            job.setObjRef(objRef);
             job.setQueuedEpochMs(System.currentTimeMillis());
             job.setState(MongoStorage.JOB_STATE_QUEUED);
             job.setUser("<owner>");
