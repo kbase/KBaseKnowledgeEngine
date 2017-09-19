@@ -150,6 +150,10 @@ public class MongoStorage {
         connJobs.update(String.format("{%s:#}", "job_id"), job.getJobId()).upsert().with(job);
     }
 
+    public void deleteAllConnJobs() {
+        connJobs.remove();
+    }
+
     public List<WSEvent> loadUnprocessedEvents() {
         return asList(wsEvents.find(String.format("{%s:#}", "processed"), false).as(WSEvent.class));
     }

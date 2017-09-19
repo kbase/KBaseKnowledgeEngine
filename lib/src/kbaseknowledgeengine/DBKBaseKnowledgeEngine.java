@@ -40,8 +40,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final Map<String, List<ConnectorConfig>> storageTypeToConnectorCfg;
     private final AuthToken keAdminToken;
     
-    private int connectorJobs = 0;
-    
     public static final String MONGOEXE_DEFAULT = "/opt/mongo/bin/mongod";
     
     public DBKBaseKnowledgeEngine(String mongoHosts, String mongoDb, String mongoUser,
@@ -75,11 +73,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     protected void objectVersionCreated(WSEvent evt) {
         evt.processed = true;
         updateEvent(evt);
-        if (connectorJobs > 0) {
-            // Temporary ignore all except first event
-            return;
-        }
-        connectorJobs++;
         runConnector(evt);
     }
     
@@ -273,10 +266,10 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                                     Map<String, Object> retMap = (Map)retArr.get(0);
                                     System.out.println("Output for job [" + jobId + "]: " +
                                             UObject.transformObjectToString(retMap));
-                                    job.setNewReNodes(asInteger((Long)retMap.get("new_re_nodes")));
+                                    job.setNewReNodes(asInteger(retMap.get("new_re_nodes")));
                                     job.setUpdatedReNodes(asInteger(
-                                            (Long)retMap.get("updated_re_nodes")));
-                                    job.setNewReLinks(asInteger((Long)retMap.get("new_re_links")));
+                                            retMap.get("updated_re_nodes")));
+                                    job.setNewReLinks(asInteger(retMap.get("new_re_links")));
                                     job.setMessage((String)retMap.get("message"));
                                     System.out.println("New-nodes: " + job.getNewReNodes() + ", " +
                                             "updated-nodes: " + job.getUpdatedReNodes() + ", " + 
@@ -337,8 +330,21 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         return ret;
     }
     
-    private static Integer asInteger(Long input) {
-        return input == null ? null : (int)(long)input;
+    private static Integer asInteger(Object input) {
+        if (input == null) {
+            return null;
+        }
+        if (input instanceof Integer) {
+            return (Integer)input;
+        }
+        if (input instanceof Long) {
+            return (int)(long)(Long)input;
+        }
+        if (input instanceof String) {
+            return Integer.parseInt((String)input);
+        }
+        throw new IllegalStateException("Can not convert " + input + " of type " + 
+                input.getClass().getSimpleName() + " to Integer");
     }
     
     private static boolean isJobDone(AppJob job) {
@@ -350,6 +356,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     public void testInit(AuthToken authPart, RpcContext jsonRpcContext) {
         checkAdmin(authPart);
         store.deleteAllAppJobs();
+        store.deleteAllConnJobs();
     }
 	
 }
