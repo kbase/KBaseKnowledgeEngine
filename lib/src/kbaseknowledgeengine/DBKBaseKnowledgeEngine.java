@@ -68,13 +68,20 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             @Override
             public void objectVersionCreated(WSEvent evt) {
                 if (connectorJobs > 0) {
-                    return;  // Temporary ignore all except first event
+                    // Temporary ignore all except first event
+                    System.out.println("WSEvent for obj-ref=" + getObjRef(evt) + " was skipped");
+                    return;
                 }
                 connectorJobs++;
                 evt.processed = true;
                 store.updateEvent(evt);
+                runConnector(evt);
             }
         });
+    }
+    
+    private static String getObjRef(WSEvent evt) {
+        return evt.accessGroupId + "/" + evt.accessGroupObjectId + "/" + evt.version;
     }
 	
     public void stopEventProcessor() {
