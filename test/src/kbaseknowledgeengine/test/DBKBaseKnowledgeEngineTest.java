@@ -1,8 +1,12 @@
 package kbaseknowledgeengine.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +21,9 @@ import junit.framework.Assert;
 import kbaseknowledgeengine.AppStatus;
 import kbaseknowledgeengine.DBKBaseKnowledgeEngine;
 import kbaseknowledgeengine.RunAppParams;
+import kbaseknowledgeengine.cfg.AppConfig;
+import kbaseknowledgeengine.cfg.ConnectorConfig;
+import kbaseknowledgeengine.cfg.IExecConfigLoader;
 import kbaseknowledgeengine.db.MongoStorage;
 import us.kbase.auth.AuthConfig;
 import us.kbase.auth.AuthToken;
@@ -46,7 +53,23 @@ public class DBKBaseKnowledgeEngineTest {
         token = TestCommon.getToken(authService);
         engine = new DBKBaseKnowledgeEngine("localhost:" + mongo.getServerPort(), 
                 "test_" + System.currentTimeMillis(), null, null, eeUrl, token.getUserName(),
-                config, null);
+                config, null, new IExecConfigLoader() {
+                    
+                    @Override
+                    public List<ConnectorConfig> loadConnectorConfigs() throws IOException {
+                        return Collections.emptyList();
+                    }
+                    
+                    @Override
+                    public List<AppConfig> loadAppConfigs() throws IOException {
+                        AppConfig cfg = new AppConfig();
+                        cfg.setApp("A0");
+                        cfg.setTitle("Test App");
+                        cfg.setModuleMethod("onerepotest.send_data");
+                        cfg.setVersionTag("dev");
+                        return Arrays.asList(cfg);
+                    }
+                });
     }
     
     private static Map<String, String> getConfig(final String serviceName) throws Exception {

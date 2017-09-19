@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import kbaseknowledgeengine.cfg.ExecConfigLoader;
+import kbaseknowledgeengine.cfg.IExecConfigLoader;
 import kbaseknowledgeengine.db.MongoStorage;
 import kbaseknowledgeengine.db.WSEvent;
 
@@ -17,32 +17,31 @@ public class WSEventProcessor {
     private final MongoStorage store;
     private final Set<String> supportedStorageTypes;
     private final Set<String> supportedEventTypes = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(NEW_OBJECT_VER, NEW_OBJECT)));
+            new HashSet<String>(Arrays.asList(EVENT_TYPE_NEW_OBJECT_VER, EVENT_TYPE_NEW_OBJECT)));
     private final Set<WSEvent> loadedEvents = Collections.synchronizedSet(
             new HashSet<WSEvent>());
-    private Thread watcher;
+    private final WSEventListener listener;
+    private volatile Thread watcher;
 
-    private static final String NEW_OBJECT_VER = "NEW_VERSION";
-    private static final String NEW_OBJECT = "NEW_ALL_VERSIONS";
+    public static final String EVENT_TYPE_NEW_OBJECT_VER = "NEW_VERSION";
+    public static final String EVENT_TYPE_NEW_OBJECT = "NEW_ALL_VERSIONS";
 
-    public WSEventProcessor(MongoStorage store, WSEventListener listener) throws IOException {
+    public WSEventProcessor(MongoStorage store, WSEventListener listener,
+            IExecConfigLoader ecl) throws IOException {
         this.store = store;
-        supportedStorageTypes = ExecConfigLoader.loadConnectorConfigs().stream()
+        this.listener = listener;
+        supportedStorageTypes = ecl.loadConnectorConfigs().stream()
                 .map(item -> item.getWorkspaceType()).collect(Collectors.toSet());
         watcher = new Thread(new Runnable() {
             
             @Override
             public void run() {
                 while (true) {
-                    List<WSEvent> newEvents = loadNewEvents(loadedEvents);
-                    for (WSEvent evt : newEvents) {
-                        listener.objectVersionCreated(evt);
-                        if (Thread.currentThread().isInterrupted()) {
-                            watcher = null;
-                            return;
-                        }
-                    }
                     try {
+                        updateEvents();
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
                         Thread.sleep(5000);
                     } catch (InterruptedException e) {
                         break;
@@ -59,7 +58,7 @@ public class WSEventProcessor {
             return;
         }
         watcher.interrupt();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             try {
                 Thread.sleep(100);
             } catch (Exception e) {}
@@ -67,22 +66,30 @@ public class WSEventProcessor {
                 return;
             }
         }
+        if (watcher != null) {
+            throw new IllegalStateException("Couldn't stop watcher thread");
+        }
     }
     
-    private List<WSEvent> loadNewEvents(Set<WSEvent> alreadyLoaded) {
-        List<WSEvent> ret = new ArrayList<>();
+    private void updateEvents() throws InterruptedException {
+        List<WSEvent> newEvents = new ArrayList<>();
         for (WSEvent evt : store.loadUnprocessedEvents()) {
             if (evt.eventType != null && supportedEventTypes.contains(evt.eventType) &&
                     evt.storageObjectType != null && 
                     supportedStorageTypes.contains(evt.storageObjectType)) {
-                if (alreadyLoaded.contains(evt)) {
+                if (loadedEvents.contains(evt)) {
                     continue;
                 }
-                alreadyLoaded.add(evt);
-                ret.add(evt);
+                loadedEvents.add(evt);
+                newEvents.add(evt);
             }
         }
-        return ret;
+        for (WSEvent evt : newEvents) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+            listener.objectVersionCreated(evt);
+        }
     }
     
     public static interface WSEventListener {

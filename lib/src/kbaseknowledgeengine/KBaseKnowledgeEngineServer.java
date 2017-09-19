@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
@@ -12,6 +13,8 @@ import us.kbase.common.service.RpcContext;
 
 //BEGIN_HEADER
 import java.net.URL;
+
+import kbaseknowledgeengine.cfg.ExecConfigLoader;
 //END_HEADER
 
 /**
@@ -45,7 +48,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
         }
         AuthToken keAdminToken = new AuthToken(keAdminTokenString, "<unknown>");
         impl = new DBKBaseKnowledgeEngine(mongoHosts, mongoDb, mongoUser, mongoPassword, 
-                executionEngineUrl, admins, config, keAdminToken);
+                executionEngineUrl, admins, config, keAdminToken, ExecConfigLoader.getInstance());
         //END_CONSTRUCTOR
     }
 

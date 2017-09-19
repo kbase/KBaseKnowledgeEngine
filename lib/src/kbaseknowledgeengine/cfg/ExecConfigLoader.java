@@ -7,28 +7,36 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ExecConfigLoader {
-    private static List<AppConfig> appConfigs = null;
-    private static List<ConnectorConfig> connConfigs = null;
+public class ExecConfigLoader implements IExecConfigLoader {
+    private List<AppConfig> appConfigs = null;
+    private List<ConnectorConfig> connConfigs = null;
     
     public static final String APP_CONFIG_PATH = "config/apps";
     public static final String CONN_CONFIG_PATH = "config/connectors";
     public static final String KB_DEP_CFG = "KB_DEPLOYMENT_CONFIG";
     
-    public static List<AppConfig> loadAppConfigs() throws IOException {
-        if (appConfigs == null) {
-            appConfigs = loadConfigs(APP_CONFIG_PATH, AppConfig.class);
-        }
+    private static volatile ExecConfigLoader instance = null;
+    
+    private ExecConfigLoader() throws IOException {
+        appConfigs = loadConfigs(APP_CONFIG_PATH, AppConfig.class);
+        connConfigs = loadConfigs(CONN_CONFIG_PATH, ConnectorConfig.class);
+    }
+    
+    public List<AppConfig> loadAppConfigs() throws IOException {
         return appConfigs;
     }
 
-    public static List<ConnectorConfig> loadConnectorConfigs() throws IOException {
-        if (connConfigs == null) {
-            connConfigs = loadConfigs(CONN_CONFIG_PATH, ConnectorConfig.class);
-        }
+    public List<ConnectorConfig> loadConnectorConfigs() throws IOException {
         return connConfigs;
     }
 
+    public static IExecConfigLoader getInstance() throws IOException {
+        if (instance == null) {
+            instance = new ExecConfigLoader();
+        }
+        return instance;
+    }
+    
     private static <T> List<T> loadConfigs(String configPath, 
             Class<T> target) throws IOException {
         ObjectMapper mapper = new ObjectMapper();

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import kbaseknowledgeengine.cfg.AppConfig;
 import kbaseknowledgeengine.cfg.ConnectorConfig;
-import kbaseknowledgeengine.cfg.ExecConfigLoader;
+import kbaseknowledgeengine.cfg.IExecConfigLoader;
 import kbaseknowledgeengine.db.AppJob;
 import kbaseknowledgeengine.db.ConnJob;
 import kbaseknowledgeengine.db.IJob;
@@ -46,16 +46,16 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     
     public DBKBaseKnowledgeEngine(String mongoHosts, String mongoDb, String mongoUser,
             String mongoPassword, URL executionEngineUrl, String admins,
-            Map<String, String> srvConfig, AuthToken keAdminToken) 
+            Map<String, String> srvConfig, AuthToken keAdminToken, IExecConfigLoader ecl) 
                     throws MongoStorageException, IOException {
         if (mongoHosts == null || mongoHosts.trim().length() == 0) {
             throw new MongoStorageException("Mongo host is not set in secure config parameters");
         }
         store = new MongoStorage(mongoHosts, mongoDb, mongoUser, mongoPassword, null);
-        List<AppConfig> appCfgList = ExecConfigLoader.loadAppConfigs();
+        List<AppConfig> appCfgList = ecl.loadAppConfigs();
         appConfigs = appCfgList.stream().collect(Collectors.toMap(item -> item.getApp(), 
                 Function.identity()));
-        List<ConnectorConfig> connCfgList = ExecConfigLoader.loadConnectorConfigs();
+        List<ConnectorConfig> connCfgList = ecl.loadConnectorConfigs();
         connConfigs = connCfgList.stream().collect(Collectors.toMap(item -> item.getConnectorApp(),
                 Function.identity()));
         storageTypeToConnectorCfg = connCfgList.stream()
@@ -67,16 +67,21 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             
             @Override
             public void objectVersionCreated(WSEvent evt) {
-                evt.processed = true;
-                store.updateEvent(evt);
-                if (connectorJobs > 0) {
-                    // Temporary ignore all except first event
-                    return;
-                }
-                connectorJobs++;
-                runConnector(evt);
+                DBKBaseKnowledgeEngine.this.objectVersionCreated(evt);
             }
-        });
+        }, ecl);
+    }
+    
+    protected void objectVersionCreated(WSEvent evt) {
+        System.out.println("WSEventProcessor->DBKBaseKnowledgeEngine: " + evt);
+        evt.processed = true;
+        store.updateEvent(evt);
+        if (connectorJobs > 0) {
+            // Temporary ignore all except first event
+            return;
+        }
+        connectorJobs++;
+        runConnector(evt);
     }
     
     private static String getObjRef(WSEvent evt) {
@@ -233,76 +238,82 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                 while (true) {
                     try {
                         Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                    boolean toUpdate = false;
-                    boolean toBreak = false;
-                    try {
-                        JobState js = njs.checkJob(jobId);
-                        if (js.getCanceled() != null && js.getCanceled() == 1L) {
-                            job.setState(MongoStorage.JOB_STATE_ERROR);
-                            job.setMessage("Job was canceled");
-                            toUpdate = true;
-                            toBreak = true;
-                        } else if (js.getFinished() != null && js.getFinished() == 1L) {
-                            if (js.getError() != null) {
+                        boolean toUpdate = false;
+                        boolean toBreak = false;
+                        try {
+                            JobState js = njs.checkJob(jobId);
+                            if (js.getCanceled() != null && js.getCanceled() == 1L) {
                                 job.setState(MongoStorage.JOB_STATE_ERROR);
-                                job.setMessage(js.getError().getMessage());
-                                System.out.println("Job " + jobId + " failed, error: " + 
-                                job.getMessage());
-                            } else {
-                                job.setState(MongoStorage.JOB_STATE_FINISHED);
-                                System.out.println("Job " + jobId + " is done");
-                                List<Object> retArr = UObject.transformObjectToObject(
-                                        js.getResult(), List.class);
-                                Map<String, Object> retMap = (Map)retArr.get(0); 
-                                job.setNewReNodes(asInteger((Long)retMap.get("new_re_nodes")));
-                                job.setUpdatedReNodes(asInteger(
-                                        (Long)retMap.get("updated_re_nodes")));
-                                job.setNewReLinks(asInteger((Long)retMap.get("new_re_links")));
-                                job.setMessage((String)retMap.get("message"));
-                                System.out.println("New-nodes: " + job.getNewReNodes() + ", " +
-                                        "updated-nodes: " + job.getUpdatedReNodes() + ", " + 
-                                        "new-links: " + job.getNewReLinks());
-                            }
-                            if (job.getStartedEpochMs() == null) {
-                                job.setStartedEpochMs(js.getExecStartTime());
-                            }
-                            job.setFinishedEpochMs(js.getFinishTime());
-                            toUpdate = true;
-                            toBreak = true;
-                        } else {
-                            String njsState = js.getJobState();
-                            if (njsState != null && njsState.equals("in-progress")) {
-                                String newState = MongoStorage.JOB_STATE_STARTED;
-                                toUpdate = !job.getState().equals(newState);
-                                if (toUpdate) {
-                                    job.setState(newState);
+                                job.setMessage("Job was canceled");
+                                toUpdate = true;
+                                toBreak = true;
+                            } else if (js.getFinished() != null && js.getFinished() == 1L) {
+                                if (js.getError() != null) {
+                                    job.setState(MongoStorage.JOB_STATE_ERROR);
+                                    job.setMessage(js.getError().getMessage());
+                                    System.out.println("Job " + jobId + " failed, error: " + 
+                                            job.getMessage());
+                                } else {
+                                    job.setState(MongoStorage.JOB_STATE_FINISHED);
+                                    System.out.println("Job " + jobId + " is done");
+                                    List<Object> retArr = UObject.transformObjectToObject(
+                                            js.getResult(), List.class);
+                                    Map<String, Object> retMap = (Map)retArr.get(0);
+                                    System.out.println("Output for job [" + jobId + "]: " +
+                                            UObject.transformObjectToString(retMap));
+                                    job.setNewReNodes(asInteger((Long)retMap.get("new_re_nodes")));
+                                    job.setUpdatedReNodes(asInteger(
+                                            (Long)retMap.get("updated_re_nodes")));
+                                    job.setNewReLinks(asInteger((Long)retMap.get("new_re_links")));
+                                    job.setMessage((String)retMap.get("message"));
+                                    System.out.println("New-nodes: " + job.getNewReNodes() + ", " +
+                                            "updated-nodes: " + job.getUpdatedReNodes() + ", " + 
+                                            "new-links: " + job.getNewReLinks());
+                                }
+                                if (job.getStartedEpochMs() == null) {
                                     job.setStartedEpochMs(js.getExecStartTime());
                                 }
+                                job.setFinishedEpochMs(js.getFinishTime());
+                                toUpdate = true;
+                                toBreak = true;
+                            } else {
+                                String njsState = js.getJobState();
+                                if (njsState != null && njsState.equals("in-progress")) {
+                                    String newState = MongoStorage.JOB_STATE_STARTED;
+                                    toUpdate = !job.getState().equals(newState);
+                                    if (toUpdate) {
+                                        System.out.println("Job " + jobId + " is in progress...");
+                                        job.setState(newState);
+                                        job.setStartedEpochMs(js.getExecStartTime());
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Error checking job state for " + 
+                                    "[" + job.getJobId() + "]:");
+                            e.printStackTrace(System.out);
+                            job.setState(MongoStorage.JOB_STATE_ERROR);
+                            job.setMessage("Error monitoring job: " + e.getMessage());
+                            toUpdate = true;
+                            toBreak = true;
+                        }
+                        if (toUpdate) {
+                            if (job instanceof AppJob) {
+                                store.insertUpdateAppJob((AppJob)job);
+                            } else if (job instanceof ConnJob) {
+                                store.insertUpdateConnJob((ConnJob)job);
+                            } else {
+                                throw new IllegalStateException("Unsupported job type: " + 
+                                        job.getClass().getSimpleName());
                             }
                         }
+                        if (toBreak) {
+                            break;
+                        }
                     } catch (Exception e) {
-                        System.out.println("Error checking job state for " + 
+                        System.out.println("Error watching job state for " +
                                 "[" + job.getJobId() + "]:");
                         e.printStackTrace(System.out);
-                        job.setState(MongoStorage.JOB_STATE_ERROR);
-                        job.setMessage("Error monitoring job: " + e.getMessage());
-                        toUpdate = true;
-                        toBreak = true;
-                    }
-                    if (toUpdate) {
-                        if (job instanceof AppJob) {
-                            store.insertUpdateAppJob((AppJob)job);
-                        } else if (job instanceof ConnJob) {
-                            store.insertUpdateConnJob((ConnJob)job);
-                        } else {
-                            throw new IllegalStateException("Unsupported job type: " + 
-                                    job.getClass().getSimpleName());
-                        }
-                    }
-                    if (toBreak) {
                         break;
                     }
                 }
