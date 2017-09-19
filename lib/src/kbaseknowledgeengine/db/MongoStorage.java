@@ -159,7 +159,11 @@ public class MongoStorage {
                     "accessGroupObjectId", "version", "timestamp", "eventType"), evt.accessGroupId,
                 evt.accessGroupObjectId, evt.version, evt.timestamp, evt.eventType).with(evt);
     }
-    
+
+    public void insertEvent(WSEvent evt) {
+        wsEvents.insert(evt);
+    }
+
     private static <T> List<T> asList(Iterable<T> iter) {
         List<T> ret = new ArrayList<T>();
         for (T item : iter) {

@@ -27,6 +27,7 @@ public class WSEvent {
     public Boolean indexed;
     @JsonProperty("processed")
     public Boolean processed;
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -44,6 +45,7 @@ public class WSEvent {
         result = prime * result + ((version == null) ? 0 : version.hashCode());
         return result;
     }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -85,6 +87,16 @@ public class WSEvent {
             return false;
         return true;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return "WSEvent [storageCode=" + storageCode + ", accessGroupId="
+                + accessGroupId + ", accessGroupObjectId=" + accessGroupObjectId
+                + ", version=" + version + ", newName=" + newName
+                + ", timestamp=" + timestamp + ", eventType=" + eventType
+                + ", storageObjectType=" + storageObjectType
+                + ", storageObjectTypeVersion=" + storageObjectTypeVersion
+                + ", isGlobalAccessed=" + isGlobalAccessed + ", indexed="
+                + indexed + ", processed=" + processed + "]";
+    }
 }
