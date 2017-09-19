@@ -37,7 +37,7 @@ public class WSEventProcessorTest {
         WSEvent evt1 = new WSEvent();
         evt1.eventType = WSEventProcessor.EVENT_TYPE_NEW_OBJECT_VER;
         evt1.accessGroupId = 3;
-        evt1.accessGroupObjectId = 2;
+        evt1.accessGroupObjectId = "2";
         evt1.version = 1;
         evt1.storageCode = "WS";
         evt1.storageObjectType = "KBaseGenomes.Genome";

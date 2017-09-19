@@ -8,7 +8,7 @@ public class WSEvent {
     @JsonProperty("accessGroupId")
     public Integer accessGroupId;
     @JsonProperty("accessGroupObjectId")
-    public Integer accessGroupObjectId;
+    public String accessGroupObjectId;
     @JsonProperty("version")
     public Integer version;
     @JsonProperty("newName")

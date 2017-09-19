@@ -159,6 +159,13 @@ public class MongoStorage {
                     "accessGroupObjectId", "version", "timestamp", "eventType"), evt.accessGroupId,
                 evt.accessGroupObjectId, evt.version, evt.timestamp, evt.eventType).with(evt);
     }
+    
+    public WSEvent loadEvent(int accessGroupId, String accessGroupObjectId, int version,
+            long timestamp, String eventType) {
+        return wsEvents.findOne(String.format("{%s:#,%s:#,%s:#,%s:#,%s:#}", "accessGroupId",
+                "accessGroupObjectId", "version", "timestamp", "eventType"), accessGroupId,
+            accessGroupObjectId, version, timestamp, eventType).as(WSEvent.class);
+    }
 
     public void insertEvent(WSEvent evt) {
         wsEvents.insert(evt);
