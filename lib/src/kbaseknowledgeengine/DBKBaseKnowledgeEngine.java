@@ -32,6 +32,8 @@ import us.kbase.common.service.UObject;
 import us.kbase.narrativejobservice.JobState;
 import us.kbase.narrativejobservice.NarrativeJobServiceClient;
 import us.kbase.narrativejobservice.RunJobParams;
+import workspace.GetObjectInfo3Params;
+import workspace.WorkspaceClient;
 
 public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final MongoStorage store;
@@ -43,6 +45,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final WSEventProcessor eventProcessor;
     private final Map<String, List<ConnectorConfig>> storageTypeToConnectorCfg;
     private final AuthToken keAdminToken;
+    private final URL wsUrl;
     private final URL srvWizUrl;
     
     public static final String MONGOEXE_DEFAULT = "/opt/mongo/bin/mongod";
@@ -74,6 +77,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             }
         }, ecl);
         srvWizUrl = new URL(srvConfig.get("srv-wiz-url"));
+        wsUrl = new URL(srvConfig.get("workspace-url"));
     }
     
     protected void objectVersionCreated(WSEvent evt) {
@@ -211,6 +215,23 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         }
     }
     
+    /*private String getObjectOwnerAsAdmin(String objRef) {
+        try {
+            WorkspaceClient wsCl = new WorkspaceClient(wsUrl, keAdminToken);
+            wsCl.setIsInsecureHttpConnectionAllowed(true);
+            final Map<String, Object> command = new HashMap<>();
+            command.put("command", "getObjectInfo");
+            command.put("params", new GetObjectInfo3Params().withObjects(
+                    Arrays.asList(new ObjectSpecification().withRef(genomeWsRef))));
+            return wsCl.administer(new UObject(command))
+                    .asClassInstance(GetObjects2Results.class)
+                    .getData().get(0).getData().asClassInstance(Genome.class);
+        } catch (Exception e) {
+            System.out.println("Error loading object owner for obj_ref=" + objRef + ": " +
+                    e.getMessage());
+        }
+    }*/
+    
     public void runConnector(WSEvent evt) {
         ConnectorConfig cfg = storageTypeToConnectorCfg.get(evt.storageObjectType).get(0);
         try {
@@ -310,6 +331,8 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                                     if (appDescr != null) {
                                         job.setNewReNodes(asInteger(appDescr.getNodesCreated()));
                                         job.setNewReLinks(asInteger(appDescr.getRelationsCreated()));
+                                        toUpdate = true;
+                                        // TODO: only update if counters are changed
                                     }
                                 }
                             }
