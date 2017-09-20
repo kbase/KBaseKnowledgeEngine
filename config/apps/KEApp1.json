@@ -1,5 +1,5 @@
 {
-    "app": "A2",
+    "app": "KEApp1",
     "module_method": "KEAppExpressionBiclusters.construct_expr_biclusters",
     "version_tag": "dev",
     "title": "Expression: biclusters (HCL)",
