@@ -13,6 +13,7 @@ public interface IKBaseKnowledgeEngine {
 
 	public RunAppOutput runApp(RunAppParams params, AuthToken authPart, RpcContext jsonRpcContext);
 
-	public void testInit(AuthToken authPart, RpcContext jsonRpcContext);
+	public String getConnectorState(GetConnectorStateParams params, AuthToken authPart);
 	
+	public void cleanAppData(CleanAppDataParams params, AuthToken authPart);
 }

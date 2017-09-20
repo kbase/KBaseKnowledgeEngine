@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
@@ -27,7 +26,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.1";
     private static final String gitUrl = "https://github.com/rsutormin/KBaseKnowledgeEngine";
-    private static final String gitCommitHash = "14500a76668db6c73f38944d3890ee1263a57dcd";
+    private static final String gitCommitHash = "753926e37807bf2551934e7955a8a9209fa4a6a2";
 
     //BEGIN_CLASS_HEADER
     IKBaseKnowledgeEngine impl = null;  //new FakeKBaseKnowledgeEngine();
@@ -108,8 +107,37 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.testInit", async=true)
     public void testInit(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         //BEGIN testInit
-    	impl.testInit(authPart, jsonRpcContext);
         //END testInit
+    }
+
+    /**
+     * <p>Original spec-file function name: getConnectorState</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link kbaseknowledgeengine.GetConnectorStateParams GetConnectorStateParams}
+     * @return   instance of String
+     */
+    @JsonServerMethod(rpc = "KBaseKnowledgeEngine.getConnectorState", async=true)
+    public String getConnectorState(GetConnectorStateParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
+        String returnVal = null;
+        //BEGIN getConnectorState
+        returnVal = impl.getConnectorState(params, authPart);
+        //END getConnectorState
+        return returnVal;
+    }
+
+    /**
+     * <p>Original spec-file function name: cleanAppData</p>
+     * <pre>
+     * Only admins can run this function.
+     * </pre>
+     * @param   params   instance of type {@link kbaseknowledgeengine.CleanAppDataParams CleanAppDataParams}
+     */
+    @JsonServerMethod(rpc = "KBaseKnowledgeEngine.cleanAppData", async=true)
+    public void cleanAppData(CleanAppDataParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
+        //BEGIN cleanAppData
+        impl.cleanAppData(params, authPart);
+        //END cleanAppData
     }
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.status")
     public Map<String, Object> status() {
