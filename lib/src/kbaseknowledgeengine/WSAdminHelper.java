@@ -47,7 +47,7 @@ public class WSAdminHelper {
         
         public ObjectInfo(Tuple11 <Long, String, String, String, Long, String, 
                 Long, String, String, Long, Map<String, String>> wsInfo) {
-            resolvedRef = wsInfo.getE1() + "/" + wsInfo.getE7() + "/" + wsInfo.getE5();
+            resolvedRef = wsInfo.getE7() + "/" + wsInfo.getE1() + "/" + wsInfo.getE5();
             owner = wsInfo.getE6();
         }
         
