@@ -1,0 +1,8 @@
+{
+    "app": "KEApp6",
+    "module_method": "KEAppExpressionBiclusters.orthologs_enrich_goterms4fitness",
+    "version_tag": "dev",
+    "title": "Fitness: orthologs GO enrichment",
+    "starting_from_date": "2017-09-01",
+    "regularity": "1M"
+}
