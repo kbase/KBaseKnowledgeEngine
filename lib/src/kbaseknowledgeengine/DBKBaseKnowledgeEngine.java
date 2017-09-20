@@ -2,9 +2,12 @@ package kbaseknowledgeengine;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +16,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import kbaseknowledgeengine.WSAdminHelper.ObjectInfo;
 import kbaseknowledgeengine.cfg.AppConfig;
 import kbaseknowledgeengine.cfg.ConnectorConfig;
 import kbaseknowledgeengine.cfg.IExecConfigLoader;
@@ -29,11 +33,10 @@ import kbaserelationengine.KEAppDescriptor;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.RpcContext;
 import us.kbase.common.service.UObject;
+import us.kbase.common.service.UnauthorizedException;
 import us.kbase.narrativejobservice.JobState;
 import us.kbase.narrativejobservice.NarrativeJobServiceClient;
 import us.kbase.narrativejobservice.RunJobParams;
-import workspace.GetObjectInfo3Params;
-import workspace.WorkspaceClient;
 
 public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final MongoStorage store;
@@ -47,13 +50,15 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final AuthToken keAdminToken;
     private final URL wsUrl;
     private final URL srvWizUrl;
+    private final WSAdminHelper wsAdminHelper;
     
     public static final String MONGOEXE_DEFAULT = "/opt/mongo/bin/mongod";
+    public static final boolean SUPPORT_COPY_OPERATIONS = false;
     
     public DBKBaseKnowledgeEngine(String mongoHosts, String mongoDb, String mongoUser,
             String mongoPassword, URL executionEngineUrl, String admins,
             Map<String, String> srvConfig, AuthToken keAdminToken, IExecConfigLoader ecl) 
-                    throws MongoStorageException, IOException {
+                    throws MongoStorageException, IOException, UnauthorizedException {
         if (mongoHosts == null || mongoHosts.trim().length() == 0) {
             throw new MongoStorageException("Mongo host is not set in secure config parameters");
         }
@@ -78,15 +83,19 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         }, ecl);
         srvWizUrl = new URL(srvConfig.get("srv-wiz-url"));
         wsUrl = new URL(srvConfig.get("workspace-url"));
+        wsAdminHelper = new WSAdminHelper(wsUrl, keAdminToken);
     }
     
     protected void objectVersionCreated(WSEvent evt) {
         evt.processed = true;
-        updateEvent(evt);
+        setEventProcessed(evt);
+        if (evt.version == null && !SUPPORT_COPY_OPERATIONS) {
+            return;
+        }
         runConnector(evt);
     }
     
-    private void updateEvent(WSEvent evt) {
+    private void setEventProcessed(WSEvent evt) {
         try {
             store.updateEvent(evt);
             WSEvent evt2 = store.loadEvent(evt.accessGroupId, evt.accessGroupObjectId, 
@@ -99,10 +108,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         }
     }
     
-    private static String getObjRef(WSEvent evt) {
-        return evt.accessGroupId + "/" + evt.accessGroupObjectId + "/" + evt.version;
-    }
-	
     public void stopEventProcessor() {
         eventProcessor.stopWatcher();
     }
@@ -125,6 +130,21 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                     .withAppTitle(cfg.getTitle());
             AppJob job = jobs.get(app);
             if (job != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                long scheduleTime = job.getQueuedEpochMs() + 
+                        30 * 24 * 3600 * 1000;
+                try {
+                    long startingTime = sdf.parse(cfg.getStartingFromDate()).getTime();
+                    // TODO: Use regularity from AppConfig
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(new Date(startingTime));
+                    while (cal.getTimeInMillis() < job.getQueuedEpochMs()) {
+                        cal.add(Calendar.MONTH, 1);
+                    }
+                    scheduleTime = cal.getTimeInMillis();
+                } catch (Exception e) {
+                    System.out.println("Error setting schedule time: " + e.getMessage());
+                }
                 st.withJobId(job.getJobId())
                 .withState(job.getState())
                 .withOutput(job.getMessage())
@@ -134,8 +154,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                 .withQueuedEpochMs(job.getQueuedEpochMs())
                 .withStartedEpochMs(job.getStartedEpochMs())
                 .withFinishedEpochMs(job.getFinishedEpochMs())
-                .withScheduledEpochMs(System.currentTimeMillis() + 
-                        30 * 24 * 3600 * 1000); // TODO: Use regularity from AppConfig
+                .withScheduledEpochMs(scheduleTime);
             }
             ret.add(st);
         }
@@ -217,23 +236,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         }
     }
     
-    /*private String getObjectOwnerAsAdmin(String objRef) {
-        try {
-            WorkspaceClient wsCl = new WorkspaceClient(wsUrl, keAdminToken);
-            wsCl.setIsInsecureHttpConnectionAllowed(true);
-            final Map<String, Object> command = new HashMap<>();
-            command.put("command", "getObjectInfo");
-            command.put("params", new GetObjectInfo3Params().withObjects(
-                    Arrays.asList(new ObjectSpecification().withRef(genomeWsRef))));
-            return wsCl.administer(new UObject(command))
-                    .asClassInstance(GetObjects2Results.class)
-                    .getData().get(0).getData().asClassInstance(Genome.class);
-        } catch (Exception e) {
-            System.out.println("Error loading object owner for obj_ref=" + objRef + ": " +
-                    e.getMessage());
-        }
-    }*/
-    
     public void runConnector(WSEvent evt) {
         ConnectorConfig cfg = storageTypeToConnectorCfg.get(evt.storageObjectType).get(0);
         try {
@@ -248,7 +250,9 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
             jobParams.put("app_guid", cfg.getConnectorApp());
-            String objRef = getObjRef(evt);
+            ObjectInfo objInfo = wsAdminHelper.getObjectInfo(evt.accessGroupId, 
+                    evt.accessGroupObjectId, evt.version);
+            String objRef = objInfo.getResolvedRef();
             jobParams.put("obj_ref", objRef);
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
@@ -259,7 +263,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             job.setObjRef(objRef);
             job.setQueuedEpochMs(System.currentTimeMillis());
             job.setState(MongoStorage.JOB_STATE_QUEUED);
-            job.setUser("<owner>");
+            job.setUser(objInfo.getOwner());
             store.insertUpdateConnJob(job);
             startBackgroundMonitor(njs, null, job);
         } catch (Exception e) {
@@ -417,9 +421,13 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     public String getConnectorState(GetConnectorStateParams params,
             AuthToken authPart) {
         //TODO: check that user from authPart can read object
-        //TODO: resolve obj_ref
-        ConnJob ret = store.getLastConnJobForObjRef(params.getObjRef());
-        return ret == null ? null : ret.getState();
+        try {
+            String objRef = wsAdminHelper.getObjectInfo(params.getObjRef()).getResolvedRef();
+            ConnJob ret = store.getLastConnJobForObjRef(objRef);
+            return ret == null ? null : ret.getState();
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
     
     @Override
