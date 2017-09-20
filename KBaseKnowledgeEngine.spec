@@ -74,4 +74,19 @@ module KBaseKnowledgeEngine {
 		Restores the initial state (for testing)
 	*/
 	funcdef testInit() returns () authentication required;
+
+	typedef structure {
+		string obj_ref;
+	} GetConnectorStateParams;
+	
+	funcdef getConnectorState(GetConnectorStateParams params) returns (string) authentication required;
+
+	typedef structure {
+		string app;
+	} CleanAppDataParams;
+
+	/*
+	  Only admins can run this function.
+	*/
+	funcdef cleanAppData(CleanAppDataParams params) returns () authentication required;
 };

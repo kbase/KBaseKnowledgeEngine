@@ -463,6 +463,176 @@ Restores the initial state (for testing)
     }
 }
  
+
+
+=head2 getConnectorState
+
+  $return = $obj->getConnectorState($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBaseKnowledgeEngine.GetConnectorStateParams
+$return is a string
+GetConnectorStateParams is a reference to a hash where the following keys are defined:
+	obj_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBaseKnowledgeEngine.GetConnectorStateParams
+$return is a string
+GetConnectorStateParams is a reference to a hash where the following keys are defined:
+	obj_ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub getConnectorState
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function getConnectorState (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to getConnectorState:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'getConnectorState');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "KBaseKnowledgeEngine.getConnectorState",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'getConnectorState',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method getConnectorState",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'getConnectorState',
+				       );
+    }
+}
+ 
+
+
+=head2 cleanAppData
+
+  $obj->cleanAppData($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBaseKnowledgeEngine.CleanAppDataParams
+CleanAppDataParams is a reference to a hash where the following keys are defined:
+	app has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBaseKnowledgeEngine.CleanAppDataParams
+CleanAppDataParams is a reference to a hash where the following keys are defined:
+	app has a value which is a string
+
+
+=end text
+
+=item Description
+
+Only admins can run this function.
+
+=back
+
+=cut
+
+ sub cleanAppData
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function cleanAppData (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to cleanAppData:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'cleanAppData');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "KBaseKnowledgeEngine.cleanAppData",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'cleanAppData',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return;
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method cleanAppData",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'cleanAppData',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -506,16 +676,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'testInit',
+                method_name => 'cleanAppData',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method testInit",
+            error => "Error invoking method cleanAppData",
             status_line => $self->{client}->status_line,
-            method_name => 'testInit',
+            method_name => 'cleanAppData',
         );
     }
 }
@@ -765,6 +935,66 @@ job_id has a value which is a string
 
 a reference to a hash where the following keys are defined:
 job_id has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 GetConnectorStateParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+obj_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+obj_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 CleanAppDataParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+app has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+app has a value which is a string
 
 
 =end text

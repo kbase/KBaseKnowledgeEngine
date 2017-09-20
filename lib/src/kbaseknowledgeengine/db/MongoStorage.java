@@ -154,6 +154,18 @@ public class MongoStorage {
         connJobs.remove();
     }
 
+    public ConnJob getLastConnJobForObjRef(String objRef) {
+        List<ConnJob> list = asList(connJobs.find(String.format("{%s:#}", "obj_ref"), 
+                objRef).as(ConnJob.class));
+        ConnJob ret = null;
+        for (ConnJob job : list) {
+            if (ret == null || ret.queuedEpochMs < job.queuedEpochMs) {
+                ret = job;
+            }
+        }
+        return ret;
+    }
+
     public List<WSEvent> loadUnprocessedEvents() {
         return asList(wsEvents.find(String.format("{%s:#}", "processed"), false).as(WSEvent.class));
     }

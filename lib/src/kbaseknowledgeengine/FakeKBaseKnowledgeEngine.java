@@ -180,10 +180,16 @@ public class FakeKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
 	}
 
     @Override
-	public void testInit(AuthToken authPart, RpcContext jsonRpcContext) {
-		buildApps();
-	}
-	
+    public String getConnectorState(GetConnectorStateParams params,
+            AuthToken authPart) {
+        return null;
+    }
+
+    @Override
+    public void cleanAppData(CleanAppDataParams params, AuthToken authPart) {
+        // TODO Auto-generated method stub
+    }
+    
 	public static void main(String[] args) {
 		FakeKBaseKnowledgeEngine f =  new FakeKBaseKnowledgeEngine();
 		System.out.println("Connectors: " + f.getConnectorsStatus(null, null).size());

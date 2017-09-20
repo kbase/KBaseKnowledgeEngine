@@ -22,6 +22,10 @@ import kbaseknowledgeengine.db.IJob;
 import kbaseknowledgeengine.db.MongoStorage;
 import kbaseknowledgeengine.db.MongoStorageException;
 import kbaseknowledgeengine.db.WSEvent;
+import kbaserelationengine.CleanKEAppResultsParams;
+import kbaserelationengine.GetKEAppDescriptorParams;
+import kbaserelationengine.KBaseRelationEngineServiceClient;
+import kbaserelationengine.KEAppDescriptor;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.RpcContext;
 import us.kbase.common.service.UObject;
@@ -39,6 +43,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     private final WSEventProcessor eventProcessor;
     private final Map<String, List<ConnectorConfig>> storageTypeToConnectorCfg;
     private final AuthToken keAdminToken;
+    private final URL srvWizUrl;
     
     public static final String MONGOEXE_DEFAULT = "/opt/mongo/bin/mongod";
     
@@ -68,6 +73,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                 DBKBaseKnowledgeEngine.this.objectVersionCreated(evt);
             }
         }, ecl);
+        srvWizUrl = new URL(srvConfig.get("srv-wiz-url"));
     }
     
     protected void objectVersionCreated(WSEvent evt) {
@@ -191,7 +197,12 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             job.setState(MongoStorage.JOB_STATE_QUEUED);
             job.setUser(authPart.getUserName());
             store.insertUpdateAppJob(job);
-            startBackgroundMonitor(njs, job);
+            KBaseRelationEngineServiceClient reCl = null;
+            if (keAdminToken != null) {
+                reCl = new KBaseRelationEngineServiceClient(srvWizUrl, keAdminToken);
+                reCl.setIsInsecureHttpConnectionAllowed(true);
+            }
+            startBackgroundMonitor(njs, reCl, job);
             return new RunAppOutput().withJobId(jobId);
         } catch (Exception e) {
             throw new IllegalStateException("Error running app [" + app + "]: " + 
@@ -226,7 +237,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             job.setState(MongoStorage.JOB_STATE_QUEUED);
             job.setUser("<owner>");
             store.insertUpdateConnJob(job);
-            startBackgroundMonitor(njs, job);
+            startBackgroundMonitor(njs, null, job);
         } catch (Exception e) {
             System.out.println("Error running connector [" + cfg.getConnectorApp() + "]: " + 
                     e.getMessage());
@@ -234,7 +245,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     }
 
     private Thread startBackgroundMonitor(final NarrativeJobServiceClient njs, 
-            final IJob job) {
+            final KBaseRelationEngineServiceClient reCl, final IJob job) {
         final String jobId = job.getJobId();
         Thread ret = new Thread(new Runnable() {
             @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -292,6 +303,14 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                                         job.setStartedEpochMs(js.getExecStartTime());
                                     }
                                 }
+                                if (job instanceof AppJob) {
+                                    String appGuid = ((AppJob)job).getApp();
+                                    KEAppDescriptor appDescr = requestAppNodesLinks(reCl, appGuid);
+                                    if (appDescr != null) {
+                                        job.setNewReNodes(asInteger(appDescr.getNodesCreated()));
+                                        job.setNewReLinks(asInteger(appDescr.getRelationsCreated()));
+                                    }
+                                }
                             }
                         } catch (Exception e) {
                             System.out.println("Error checking job state for " + 
@@ -330,6 +349,19 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         return ret;
     }
     
+    private KEAppDescriptor requestAppNodesLinks(KBaseRelationEngineServiceClient reCl,
+            String appGuid) {
+        if (reCl == null) {
+            return null;
+        }
+        try {
+            return reCl.getKEAppDescriptor(new GetKEAppDescriptorParams().withAppGuid(appGuid));
+        } catch (Exception e) {
+            System.out.println("Error getting app descriptor: " + e.getMessage());
+            return null;
+        }
+    }
+    
     private static Integer asInteger(Object input) {
         if (input == null) {
             return null;
@@ -353,10 +385,24 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     }
     
     @Override
-    public void testInit(AuthToken authPart, RpcContext jsonRpcContext) {
-        checkAdmin(authPart);
-        store.deleteAllAppJobs();
-        store.deleteAllConnJobs();
+    public String getConnectorState(GetConnectorStateParams params,
+            AuthToken authPart) {
+        //TODO: check that user from authPart can read object
+        //TODO: resolve obj_ref
+        ConnJob ret = store.getLastConnJobForObjRef(params.getObjRef());
+        return ret == null ? null : ret.getState();
     }
-	
+    
+    @Override
+    public void cleanAppData(CleanAppDataParams params, AuthToken authPart) {
+        checkAdmin(authPart);
+        try {
+            KBaseRelationEngineServiceClient reCl = new KBaseRelationEngineServiceClient(
+                    srvWizUrl, keAdminToken);
+            reCl.setIsInsecureHttpConnectionAllowed(true);
+            reCl.cleanKEAppResults(new CleanKEAppResultsParams().withAppGuid(params.getApp()));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }

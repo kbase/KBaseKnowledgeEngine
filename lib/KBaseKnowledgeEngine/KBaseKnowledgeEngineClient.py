@@ -94,6 +94,26 @@ class KBaseKnowledgeEngine(object):
             'KBaseKnowledgeEngine.testInit',
             [], self._service_ver, context)
 
+    def getConnectorState(self, params, context=None):
+        """
+        :param params: instance of type "GetConnectorStateParams" ->
+           structure: parameter "obj_ref" of String
+        :returns: instance of String
+        """
+        return self._client.call_method(
+            'KBaseKnowledgeEngine.getConnectorState',
+            [params], self._service_ver, context)
+
+    def cleanAppData(self, params, context=None):
+        """
+        Only admins can run this function.
+        :param params: instance of type "CleanAppDataParams" -> structure:
+           parameter "app" of String
+        """
+        return self._client.call_method(
+            'KBaseKnowledgeEngine.cleanAppData',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('KBaseKnowledgeEngine.status',
                                         [], self._service_ver, context)

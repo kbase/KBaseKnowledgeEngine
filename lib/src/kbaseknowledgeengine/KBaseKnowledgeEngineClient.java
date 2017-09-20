@@ -224,6 +224,39 @@ public class KBaseKnowledgeEngineClient {
         caller.jsonrpcCall("KBaseKnowledgeEngine.testInit", args, retType, false, true, jsonRpcContext, this.serviceVersion);
     }
 
+    /**
+     * <p>Original spec-file function name: getConnectorState</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link kbaseknowledgeengine.GetConnectorStateParams GetConnectorStateParams}
+     * @return   instance of String
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String getConnectorState(GetConnectorStateParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("KBaseKnowledgeEngine.getConnectorState", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: cleanAppData</p>
+     * <pre>
+     * Only admins can run this function.
+     * </pre>
+     * @param   params   instance of type {@link kbaseknowledgeengine.CleanAppDataParams CleanAppDataParams}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public void cleanAppData(CleanAppDataParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<Object> retType = new TypeReference<Object>() {};
+        caller.jsonrpcCall("KBaseKnowledgeEngine.cleanAppData", args, retType, false, true, jsonRpcContext, this.serviceVersion);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};
