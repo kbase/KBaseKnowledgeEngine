@@ -51,9 +51,10 @@ public class DBKBaseKnowledgeEngineTest {
                 new AuthConfig().withKBaseAuthServerURL(new URL(authUrl))
                 .withAllowInsecureURLs("true".equals(authUrlInsecure)));
         token = TestCommon.getToken(authService);
+        AuthToken keAdminToken = authService.validateToken(config.get("ke-admin-token"));
         engine = new DBKBaseKnowledgeEngine("localhost:" + mongo.getServerPort(), 
                 "test_" + System.currentTimeMillis(), null, null, eeUrl, token.getUserName(),
-                config, null, new IExecConfigLoader() {
+                config, keAdminToken, new IExecConfigLoader() {
                     
                     @Override
                     public List<ConnectorConfig> loadConnectorConfigs() throws IOException {

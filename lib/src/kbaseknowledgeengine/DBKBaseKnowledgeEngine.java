@@ -379,7 +379,10 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             return null;
         }
         try {
-            return reCl.getKEAppDescriptor(new GetKEAppDescriptorParams().withAppGuid(appGuid));
+            KEAppDescriptor ret = reCl.getKEAppDescriptor(
+                    new GetKEAppDescriptorParams().withAppGuid(appGuid));
+            System.out.println("RelationEngine.getKEAppDescriptor(" + appGuid + "): " + ret);
+            return ret;
         } catch (Exception e) {
             System.out.println("Error getting app descriptor: " + e.getMessage());
             return null;
