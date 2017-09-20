@@ -1,0 +1,8 @@
+{
+    "app": "KEApp7",
+    "module_method": "KEAppExpressionBiclusters.orthologs_kbase_enrich_goterms",
+    "version_tag": "dev",
+    "title": "KBase: orthologs GO enrichment",
+    "starting_from_date": "2017-09-01",
+    "regularity": "1M"
+}
