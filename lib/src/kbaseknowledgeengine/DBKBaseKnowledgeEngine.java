@@ -200,6 +200,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             KBaseRelationEngineServiceClient reCl = null;
             if (keAdminToken != null) {
                 reCl = new KBaseRelationEngineServiceClient(srvWizUrl, keAdminToken);
+                reCl.setServiceVersion("dev");
                 reCl.setIsInsecureHttpConnectionAllowed(true);
             }
             startBackgroundMonitor(njs, reCl, job);
@@ -399,6 +400,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         try {
             KBaseRelationEngineServiceClient reCl = new KBaseRelationEngineServiceClient(
                     srvWizUrl, keAdminToken);
+            reCl.setServiceVersion("dev");
             reCl.setIsInsecureHttpConnectionAllowed(true);
             reCl.cleanKEAppResults(new CleanKEAppResultsParams().withAppGuid(params.getApp()));
         } catch (Exception e) {
