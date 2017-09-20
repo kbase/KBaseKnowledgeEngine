@@ -1,5 +1,5 @@
 {
-    "app": "A1",
+    "app": "KEApp2",
     "module_method": "KEOrthologyGOProfiles.run_app",
     "version_tag": "dev",
     "title": "Orthology GO profiles",

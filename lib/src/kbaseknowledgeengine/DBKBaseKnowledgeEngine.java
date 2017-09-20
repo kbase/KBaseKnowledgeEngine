@@ -133,7 +133,9 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                 .withNewReLinks(asLong(job.getNewReLinks()))
                 .withQueuedEpochMs(job.getQueuedEpochMs())
                 .withStartedEpochMs(job.getStartedEpochMs())
-                .withFinishedEpochMs(job.getFinishedEpochMs());
+                .withFinishedEpochMs(job.getFinishedEpochMs())
+                .withScheduledEpochMs(System.currentTimeMillis() + 
+                        30 * 24 * 3600 * 1000); // TODO: Use regularity from AppConfig
             }
             ret.add(st);
         }
@@ -381,7 +383,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         try {
             KEAppDescriptor ret = reCl.getKEAppDescriptor(
                     new GetKEAppDescriptorParams().withAppGuid(appGuid));
-            System.out.println("RelationEngine.getKEAppDescriptor(" + appGuid + "): " + ret);
+            //System.out.println("RelationEngine.getKEAppDescriptor(" + appGuid + "): " + ret);
             return ret;
         } catch (Exception e) {
             System.out.println("Error getting app descriptor: " + e.getMessage());
@@ -429,6 +431,7 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             reCl.setServiceVersion("dev");
             reCl.setIsInsecureHttpConnectionAllowed(true);
             reCl.cleanKEAppResults(new CleanKEAppResultsParams().withAppGuid(params.getApp()));
+            store.deleteAppJobs(params.getApp());
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

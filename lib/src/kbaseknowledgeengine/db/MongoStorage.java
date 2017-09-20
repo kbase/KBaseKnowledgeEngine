@@ -97,6 +97,8 @@ public class MongoStorage {
         appJobs.update(String.format("{%s:#}", PK_SYS_PROPS), prop).upsert().with(sp);
     }
 
+    ///////////////////////// Apps /////////////////////////////
+
     public void deleteAllAppJobs() {
         appJobs.remove();
     }
@@ -142,6 +144,12 @@ public class MongoStorage {
         return ret;
     }
 
+    public void deleteAppJobs(String app) {
+        appJobs.remove(String.format("{%s:#}", "app"), app);
+    }
+
+    ///////////////////////// Connectors /////////////////////////////
+    
     public List<ConnJob> loadAllConnJobs() {
         return asList(connJobs.find().as(ConnJob.class));
     }
@@ -166,6 +174,8 @@ public class MongoStorage {
         return ret;
     }
 
+    ///////////////////////// WSEvents /////////////////////////////
+
     public List<WSEvent> loadUnprocessedEvents() {
         return asList(wsEvents.find(String.format("{%s:#}", "processed"), false).as(WSEvent.class));
     }
@@ -186,6 +196,8 @@ public class MongoStorage {
     public void insertEvent(WSEvent evt) {
         wsEvents.insert(evt);
     }
+
+    ///////////////////////// Utils /////////////////////////////
 
     private static <T> List<T> asList(Iterable<T> iter) {
         List<T> ret = new ArrayList<T>();
