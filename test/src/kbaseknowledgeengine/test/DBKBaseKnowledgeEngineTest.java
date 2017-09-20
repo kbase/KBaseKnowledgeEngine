@@ -21,6 +21,8 @@ import junit.framework.Assert;
 import kbaseknowledgeengine.AppStatus;
 import kbaseknowledgeengine.DBKBaseKnowledgeEngine;
 import kbaseknowledgeengine.RunAppParams;
+import kbaseknowledgeengine.WSAdminHelper;
+import kbaseknowledgeengine.WSAdminHelper.ObjectInfo;
 import kbaseknowledgeengine.cfg.AppConfig;
 import kbaseknowledgeengine.cfg.ConnectorConfig;
 import kbaseknowledgeengine.cfg.IExecConfigLoader;
@@ -35,6 +37,8 @@ public class DBKBaseKnowledgeEngineTest {
     private static File tempDir = null;
     private static DBKBaseKnowledgeEngine engine = null;
     private static AuthToken token = null;
+    private static URL wsUrl = null;
+    private static AuthToken keAdminToken = null;
 
     @BeforeClass
     public static void prepare() throws Exception {
@@ -51,7 +55,8 @@ public class DBKBaseKnowledgeEngineTest {
                 new AuthConfig().withKBaseAuthServerURL(new URL(authUrl))
                 .withAllowInsecureURLs("true".equals(authUrlInsecure)));
         token = TestCommon.getToken(authService);
-        AuthToken keAdminToken = authService.validateToken(config.get("ke-admin-token"));
+        keAdminToken = authService.validateToken(config.get("ke-admin-token"));
+        wsUrl = new URL(config.get("workspace-url"));
         engine = new DBKBaseKnowledgeEngine("localhost:" + mongo.getServerPort(), 
                 "test_" + System.currentTimeMillis(), null, null, eeUrl, token.getUserName(),
                 config, keAdminToken, new IExecConfigLoader() {
@@ -68,6 +73,8 @@ public class DBKBaseKnowledgeEngineTest {
                         cfg.setTitle("Test App");
                         cfg.setModuleMethod("onerepotest.send_data");
                         cfg.setVersionTag("dev");
+                        cfg.setStartingFromDate("2017-09-01");
+                        cfg.setRegularity("1M");
                         return Arrays.asList(cfg);
                     }
                 });
@@ -106,6 +113,15 @@ public class DBKBaseKnowledgeEngineTest {
         Assert.assertNotNull(appSt.getQueuedEpochMs());
         Assert.assertNotNull(appSt.getStartedEpochMs());
         Assert.assertNotNull(appSt.getFinishedEpochMs());
+    }
+    
+    @Test
+    public void testWSAdminHelper() throws Exception {
+        WSAdminHelper wsAdm = new WSAdminHelper(wsUrl, keAdminToken);
+        String ref = "KBaseExampleData/Rhodobacter_CACIA_14H1";
+        ObjectInfo objInfo = wsAdm.getObjectInfo(ref);
+        Assert.assertNotNull(objInfo.getResolvedRef());
+        Assert.assertNotNull(objInfo.getOwner());
     }
     
     private static AppStatus findAppStatus(String app) {
