@@ -1,8 +1,8 @@
 {
     "app": "KEApp2",
-    "module_method": "KEOrthologyGOProfiles.run_app",
+    "module_method": "KEAppExpressionBiclusters.enrich_goterms4expr_biclusters",
     "version_tag": "dev",
-    "title": "Orthology GO profiles",
+    "title": "Expression: biclusters GO enrichment",
     "starting_from_date": "2017-09-01",
     "regularity": "1M"
 }
