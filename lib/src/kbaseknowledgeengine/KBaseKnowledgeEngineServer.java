@@ -24,9 +24,9 @@ import kbaseknowledgeengine.cfg.ExecConfigLoader;
  */
 public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
-    private static final String version = "0.0.1";
+    private static final String version = "0.0.2";
     private static final String gitUrl = "https://github.com/rsutormin/KBaseKnowledgeEngine";
-    private static final String gitCommitHash = "331c9d2ab52c35d0354e0616308177067b91d4ce";
+    private static final String gitCommitHash = "88deed8b08fab317ce7e852856e63e5e9dbdd682";
 
     //BEGIN_CLASS_HEADER
     IKBaseKnowledgeEngine impl = null;  //new FakeKBaseKnowledgeEngine();
@@ -64,6 +64,17 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
         returnVal = impl.getConnectorsStatus(authPart, jsonRpcContext);
         //END getConnectorsStatus
         return returnVal;
+    }
+
+    /**
+     * <p>Original spec-file function name: cleanConnectorErrors</p>
+     * <pre>
+     * </pre>
+     */
+    @JsonServerMethod(rpc = "KBaseKnowledgeEngine.cleanConnectorErrors", async=true)
+    public void cleanConnectorErrors(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
+        //BEGIN cleanConnectorErrors
+        //END cleanConnectorErrors
     }
 
     /**

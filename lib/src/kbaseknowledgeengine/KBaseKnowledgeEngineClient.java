@@ -178,6 +178,19 @@ public class KBaseKnowledgeEngineClient {
     }
 
     /**
+     * <p>Original spec-file function name: cleanConnectorErrors</p>
+     * <pre>
+     * </pre>
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public void cleanConnectorErrors(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        TypeReference<Object> retType = new TypeReference<Object>() {};
+        caller.jsonrpcCall("KBaseKnowledgeEngine.cleanConnectorErrors", args, retType, false, true, jsonRpcContext, this.serviceVersion);
+    }
+
+    /**
      * <p>Original spec-file function name: getAppsStatus</p>
      * <pre>
      * </pre>

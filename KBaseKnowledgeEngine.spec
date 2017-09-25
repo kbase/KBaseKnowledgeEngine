@@ -28,6 +28,8 @@ module KBaseKnowledgeEngine {
 	} ConnectorStatus;
 
 	funcdef getConnectorsStatus() returns (list<ConnectorStatus>) authentication required; 
+	
+	funcdef cleanConnectorErrors() returns () authentication required;
 
 	/*
 	  state - one of none, queued, started, finished, error.

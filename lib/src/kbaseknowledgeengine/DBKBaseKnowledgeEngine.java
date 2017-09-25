@@ -84,10 +84,11 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         srvWizUrl = new URL(srvConfig.get("srv-wiz-url"));
         wsUrl = new URL(srvConfig.get("workspace-url"));
         wsAdminHelper = new WSAdminHelper(wsUrl, keAdminToken);
-        cleanConnectorJobs();
     }
-    
-    private void cleanConnectorJobs() {
+
+    @Override
+    public void cleanConnectorErrors(AuthToken authPart) {
+        checkAdmin(authPart);
         List<ConnJob> connJobs = store.loadAllConnJobs();
         for (ConnJob job : connJobs) {
             if (job.getUser().equals("<owner>") || 

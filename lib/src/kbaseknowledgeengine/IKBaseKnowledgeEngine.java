@@ -16,4 +16,7 @@ public interface IKBaseKnowledgeEngine {
 	public String getConnectorState(GetConnectorStateParams params, AuthToken authPart);
 	
 	public void cleanAppData(CleanAppDataParams params, AuthToken authPart);
+	
+    public void cleanConnectorErrors(AuthToken authPart);
+
 }
