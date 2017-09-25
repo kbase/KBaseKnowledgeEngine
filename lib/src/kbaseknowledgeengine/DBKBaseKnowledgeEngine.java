@@ -84,6 +84,17 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         srvWizUrl = new URL(srvConfig.get("srv-wiz-url"));
         wsUrl = new URL(srvConfig.get("workspace-url"));
         wsAdminHelper = new WSAdminHelper(wsUrl, keAdminToken);
+        cleanConnectorJobs();
+    }
+    
+    private void cleanConnectorJobs() {
+        List<ConnJob> connJobs = store.loadAllConnJobs();
+        for (ConnJob job : connJobs) {
+            if (job.getUser().equals("<owner>") || 
+                    job.getState().equals(MongoStorage.JOB_STATE_ERROR)) {
+                store.deleteConnJob(job.getJobId());
+            }
+        }
     }
     
     protected void objectVersionCreated(WSEvent evt) {
@@ -154,7 +165,8 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                 .withQueuedEpochMs(job.getQueuedEpochMs())
                 .withStartedEpochMs(job.getStartedEpochMs())
                 .withFinishedEpochMs(job.getFinishedEpochMs())
-                .withScheduledEpochMs(scheduleTime);
+                .withScheduledEpochMs(scheduleTime)
+                .withJobId(job.getJobId());
             }
             ret.add(st);
         }
@@ -183,7 +195,8 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
                     .withNewReLinks(asLong(job.getNewReLinks()))
                     .withQueuedEpochMs(job.getQueuedEpochMs())
                     .withStartedEpochMs(job.getStartedEpochMs())
-                    .withFinishedEpochMs(job.getFinishedEpochMs());
+                    .withFinishedEpochMs(job.getFinishedEpochMs())
+                    .withJobId(job.getJobId());
             ret.add(cs);
         }
         return ret;
@@ -244,14 +257,17 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             // Let's check first that we still can change Mongo database (there is no newer version
             // of service working in parallel).
             store.checkDbVersion();
+            ObjectInfo objInfo = wsAdminHelper.getObjectInfo(evt.accessGroupId, 
+                    evt.accessGroupObjectId, evt.version);
+            if (objInfo.getFeatureCount() == null || objInfo.getFeatureCount() > 10000) {
+                return;  // We now support Genome objects only.
+            }
             NarrativeJobServiceClient njs = new NarrativeJobServiceClient(executionEngineUrl, 
                     keAdminToken);
             njs.setAllSSLCertificatesTrusted(true);
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
             jobParams.put("app_guid", cfg.getConnectorApp());
-            ObjectInfo objInfo = wsAdminHelper.getObjectInfo(evt.accessGroupId, 
-                    evt.accessGroupObjectId, evt.version);
             String objRef = objInfo.getResolvedRef();
             jobParams.put("obj_ref", objRef);
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
