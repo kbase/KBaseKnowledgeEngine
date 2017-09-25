@@ -35,7 +35,7 @@ public class WSAdminHelper {
     public ObjectInfo getObjectInfo(String objRef) throws IOException, JsonClientException {
         final Map<String, Object> command = new HashMap<>();
         command.put("command", "getObjectInfo");
-        command.put("params", new GetObjectInfo3Params().withObjects(
+        command.put("params", new GetObjectInfo3Params().withIncludeMetadata(1L).withObjects(
                 Arrays.asList(new ObjectSpecification().withRef(objRef))));
         return new ObjectInfo(wsCl.administer(new UObject(command))
                 .asClassInstance(GetObjectInfo3Results.class).getInfos().get(0));
@@ -44,11 +44,21 @@ public class WSAdminHelper {
     public static class ObjectInfo {
         private String resolvedRef;
         private String owner;
+        private Integer featureCount;
         
         public ObjectInfo(Tuple11 <Long, String, String, String, Long, String, 
                 Long, String, String, Long, Map<String, String>> wsInfo) {
             resolvedRef = wsInfo.getE7() + "/" + wsInfo.getE1() + "/" + wsInfo.getE5();
             owner = wsInfo.getE6();
+            Map<String, String> meta = wsInfo.getE11();
+            if (meta != null) {
+                String nf = meta.get("Number features");
+                if (nf != null) {
+                    try {
+                        featureCount = Integer.parseInt(nf);
+                    } catch (Exception ex) {}
+                }
+            }
         }
         
         public String getResolvedRef() {
@@ -57,6 +67,10 @@ public class WSAdminHelper {
         
         public String getOwner() {
             return owner;
+        }
+        
+        public Integer getFeatureCount() {
+            return featureCount;
         }
     }
 }

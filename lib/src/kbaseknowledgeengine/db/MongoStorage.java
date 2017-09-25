@@ -44,7 +44,7 @@ public class MongoStorage {
     public static final String JOB_STATE_FINISHED = "finished";
     public static final String JOB_STATE_ERROR = "error";
     
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
     public static final String PROP_DB_VERSION = "db_version";
     
     public MongoStorage(String hosts, String db, String user, String pwd,
@@ -156,6 +156,10 @@ public class MongoStorage {
 
     public void insertUpdateConnJob(ConnJob job) {
         connJobs.update(String.format("{%s:#}", "job_id"), job.getJobId()).upsert().with(job);
+    }
+
+    public void deleteConnJob(String jobId) {
+        connJobs.remove(String.format("{%s:#}", "job_id"), jobId);
     }
 
     public void deleteAllConnJobs() {

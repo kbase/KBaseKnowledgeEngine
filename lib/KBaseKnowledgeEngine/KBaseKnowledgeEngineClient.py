@@ -86,14 +86,6 @@ class KBaseKnowledgeEngine(object):
             'KBaseKnowledgeEngine.runApp',
             [params], self._service_ver, context)
 
-    def testInit(self, context=None):
-        """
-        Restores the initial state (for testing)
-        """
-        return self._client.call_method(
-            'KBaseKnowledgeEngine.testInit',
-            [], self._service_ver, context)
-
     def getConnectorState(self, params, context=None):
         """
         :param params: instance of type "GetConnectorStateParams" ->

@@ -69,12 +69,6 @@ module KBaseKnowledgeEngine {
 	*/
 	funcdef runApp(RunAppParams params) returns (RunAppOutput) authentication required;
 	
-	
-	/*
-		Restores the initial state (for testing)
-	*/
-	funcdef testInit() returns () authentication required;
-
 	typedef structure {
 		string obj_ref;
 	} GetConnectorStateParams;

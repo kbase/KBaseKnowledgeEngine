@@ -211,20 +211,6 @@ public class KBaseKnowledgeEngineClient {
     }
 
     /**
-     * <p>Original spec-file function name: testInit</p>
-     * <pre>
-     * Restores the initial state (for testing)
-     * </pre>
-     * @throws IOException if an IO exception occurs
-     * @throws JsonClientException if a JSON RPC exception occurs
-     */
-    public void testInit(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
-        List<Object> args = new ArrayList<Object>();
-        TypeReference<Object> retType = new TypeReference<Object>() {};
-        caller.jsonrpcCall("KBaseKnowledgeEngine.testInit", args, retType, false, true, jsonRpcContext, this.serviceVersion);
-    }
-
-    /**
      * <p>Original spec-file function name: getConnectorState</p>
      * <pre>
      * </pre>

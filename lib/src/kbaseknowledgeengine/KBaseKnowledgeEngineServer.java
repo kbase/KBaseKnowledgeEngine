@@ -26,7 +26,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.1";
     private static final String gitUrl = "https://github.com/rsutormin/KBaseKnowledgeEngine";
-    private static final String gitCommitHash = "753926e37807bf2551934e7955a8a9209fa4a6a2";
+    private static final String gitCommitHash = "331c9d2ab52c35d0354e0616308177067b91d4ce";
 
     //BEGIN_CLASS_HEADER
     IKBaseKnowledgeEngine impl = null;  //new FakeKBaseKnowledgeEngine();
@@ -96,18 +96,6 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
         returnVal = impl.runApp(params, authPart, jsonRpcContext);
         //END runApp
         return returnVal;
-    }
-
-    /**
-     * <p>Original spec-file function name: testInit</p>
-     * <pre>
-     * Restores the initial state (for testing)
-     * </pre>
-     */
-    @JsonServerMethod(rpc = "KBaseKnowledgeEngine.testInit", async=true)
-    public void testInit(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
-        //BEGIN testInit
-        //END testInit
     }
 
     /**
