@@ -52,6 +52,11 @@ class KBaseKnowledgeEngine(object):
             'KBaseKnowledgeEngine.getConnectorsStatus',
             [], self._service_ver, context)
 
+    def cleanConnectorErrors(self, context=None):
+        return self._client.call_method(
+            'KBaseKnowledgeEngine.cleanConnectorErrors',
+            [], self._service_ver, context)
+
     def getAppsStatus(self, context=None):
         """
         :returns: instance of list of type "AppStatus" (state - one of none,

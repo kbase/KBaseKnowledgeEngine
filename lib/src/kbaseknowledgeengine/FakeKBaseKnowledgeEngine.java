@@ -190,6 +190,11 @@ public class FakeKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         // TODO Auto-generated method stub
     }
     
+    @Override
+    public void cleanConnectorErrors(AuthToken authPart) {
+        // TODO Auto-generated method stub
+    }
+    
 	public static void main(String[] args) {
 		FakeKBaseKnowledgeEngine f =  new FakeKBaseKnowledgeEngine();
 		System.out.println("Connectors: " + f.getConnectorsStatus(null, null).size());

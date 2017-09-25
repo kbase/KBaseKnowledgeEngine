@@ -207,6 +207,73 @@ ConnectorStatus is a reference to a hash where the following keys are defined:
  
 
 
+=head2 cleanConnectorErrors
+
+  $obj->cleanConnectorErrors()
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+
+</pre>
+
+=end html
+
+=begin text
+
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub cleanConnectorErrors
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 0)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function cleanConnectorErrors (received $n, expecting 0)");
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "KBaseKnowledgeEngine.cleanConnectorErrors",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'cleanConnectorErrors',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return;
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method cleanConnectorErrors",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'cleanConnectorErrors',
+				       );
+    }
+}
+ 
+
+
 =head2 getAppsStatus
 
   $return = $obj->getAppsStatus()
