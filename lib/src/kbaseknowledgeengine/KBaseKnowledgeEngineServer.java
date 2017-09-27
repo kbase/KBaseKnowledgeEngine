@@ -74,6 +74,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.cleanConnectorErrors", async=true)
     public void cleanConnectorErrors(AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         //BEGIN cleanConnectorErrors
+        impl.cleanConnectorErrors(authPart);
         //END cleanConnectorErrors
     }
 
