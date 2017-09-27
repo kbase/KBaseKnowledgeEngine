@@ -154,6 +154,10 @@ public class MongoStorage {
         return asList(connJobs.find().as(ConnJob.class));
     }
 
+    public List<ConnJob> loadConnJobsForObjRef(String objRef) {
+        return asList(connJobs.find(String.format("{%s:#}", "obj_ref"), objRef).as(ConnJob.class));
+    }
+    
     public void insertUpdateConnJob(ConnJob job) {
         connJobs.update(String.format("{%s:#}", "job_id"), job.getJobId()).upsert().with(job);
     }

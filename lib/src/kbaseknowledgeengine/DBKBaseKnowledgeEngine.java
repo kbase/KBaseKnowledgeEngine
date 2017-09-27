@@ -255,8 +255,6 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
     public void runConnector(WSEvent evt) {
         ConnectorConfig cfg = storageTypeToConnectorCfg.get(evt.storageObjectType).get(0);
         try {
-            ConnJob job = new ConnJob();
-            job.setConnectorApp(cfg.getConnectorApp());
             // Let's check first that we still can change Mongo database (there is no newer version
             // of service working in parallel).
             store.checkDbVersion();
@@ -265,19 +263,28 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             if (objInfo.getFeatureCount() == null || objInfo.getFeatureCount() > 10000) {
                 return;  // We now support Genome objects only.
             }
+            String objRef = objInfo.getResolvedRef();
+            // Let's check that ther is no other jobs with the same obj_ref
+            List<ConnJob> jobs = store.loadConnJobsForObjRef(objRef);
+            if (jobs.size() > 0) {
+                System.out.println("There are other jobs saved in database for the same obj-ref=" +
+                        objRef + ", skipping...");
+                return;
+            }
             NarrativeJobServiceClient njs = new NarrativeJobServiceClient(executionEngineUrl, 
                     keAdminToken);
             njs.setAllSSLCertificatesTrusted(true);
             njs.setIsInsecureHttpConnectionAllowed(true);
             Map<String, String> jobParams = new HashMap<>();
             jobParams.put("app_guid", cfg.getConnectorApp());
-            String objRef = objInfo.getResolvedRef();
             jobParams.put("obj_ref", objRef);
             String jobId = njs.runJob(new RunJobParams().withMethod(cfg.getModuleMethod())
                     .withServiceVer(cfg.getVersionTag()).withParams(Arrays.asList(
                             new UObject(jobParams))));
             System.out.println("Runnig connector [" + cfg.getConnectorApp() + "] with job id=" + 
                             jobId);
+            ConnJob job = new ConnJob();
+            job.setConnectorApp(cfg.getConnectorApp());
             job.setJobId(jobId);
             job.setObjRef(objRef);
             job.setQueuedEpochMs(System.currentTimeMillis());
