@@ -26,7 +26,7 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.2";
     private static final String gitUrl = "https://github.com/rsutormin/KBaseKnowledgeEngine";
-    private static final String gitCommitHash = "88deed8b08fab317ce7e852856e63e5e9dbdd682";
+    private static final String gitCommitHash = "6e9c9f892f34c86d24ea977e50f737f0ae07ee92";
 
     //BEGIN_CLASS_HEADER
     IKBaseKnowledgeEngine impl = null;  //new FakeKBaseKnowledgeEngine();
@@ -138,6 +138,22 @@ public class KBaseKnowledgeEngineServer extends JsonServerServlet {
         //BEGIN cleanAppData
         impl.cleanAppData(params, authPart);
         //END cleanAppData
+    }
+
+    /**
+     * <p>Original spec-file function name: loadEventsForObjRef</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link kbaseknowledgeengine.LoadEventsForObjRefInput LoadEventsForObjRefInput}
+     * @return   instance of list of type {@link kbaseknowledgeengine.WSEvent WSEvent}
+     */
+    @JsonServerMethod(rpc = "KBaseKnowledgeEngine.loadEventsForObjRef", async=true)
+    public List<WSEvent> loadEventsForObjRef(LoadEventsForObjRefInput params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
+        List<WSEvent> returnVal = null;
+        //BEGIN loadEventsForObjRef
+        returnVal = impl.loadEventsForObjRef(params, authPart);
+        //END loadEventsForObjRef
+        return returnVal;
     }
     @JsonServerMethod(rpc = "KBaseKnowledgeEngine.status")
     public Map<String, Object> status() {

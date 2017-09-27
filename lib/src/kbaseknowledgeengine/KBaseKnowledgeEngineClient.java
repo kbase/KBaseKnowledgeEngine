@@ -256,6 +256,23 @@ public class KBaseKnowledgeEngineClient {
         caller.jsonrpcCall("KBaseKnowledgeEngine.cleanAppData", args, retType, false, true, jsonRpcContext, this.serviceVersion);
     }
 
+    /**
+     * <p>Original spec-file function name: loadEventsForObjRef</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link kbaseknowledgeengine.LoadEventsForObjRefInput LoadEventsForObjRefInput}
+     * @return   instance of list of type {@link kbaseknowledgeengine.WSEvent WSEvent}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public List<WSEvent> loadEventsForObjRef(LoadEventsForObjRefInput params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<List<WSEvent>>> retType = new TypeReference<List<List<WSEvent>>>() {};
+        List<List<WSEvent>> res = caller.jsonrpcCall("KBaseKnowledgeEngine.loadEventsForObjRef", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};

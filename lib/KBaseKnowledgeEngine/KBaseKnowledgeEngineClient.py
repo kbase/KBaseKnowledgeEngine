@@ -111,6 +111,24 @@ class KBaseKnowledgeEngine(object):
             'KBaseKnowledgeEngine.cleanAppData',
             [params], self._service_ver, context)
 
+    def loadEventsForObjRef(self, params, context=None):
+        """
+        :param params: instance of type "LoadEventsForObjRefInput" ->
+           structure: parameter "accessGroupId" of Long, parameter
+           "accessGroupObjectId" of String, parameter "version" of Long
+        :returns: instance of list of type "WSEvent" -> structure: parameter
+           "storageCode" of String, parameter "accessGroupId" of Long,
+           parameter "accessGroupObjectId" of String, parameter "version" of
+           Long, parameter "newName" of String, parameter "timestamp" of
+           Long, parameter "eventType" of String, parameter
+           "storageObjectType" of String, parameter
+           "storageObjectTypeVersion" of Long, parameter "isGlobalAccessed"
+           of Long, parameter "processed" of Long
+        """
+        return self._client.call_method(
+            'KBaseKnowledgeEngine.loadEventsForObjRef',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('KBaseKnowledgeEngine.status',
                                         [], self._service_ver, context)
