@@ -85,4 +85,26 @@ module KBaseKnowledgeEngine {
 	  Only admins can run this function.
 	*/
 	funcdef cleanAppData(CleanAppDataParams params) returns () authentication required;
+
+	typedef structure {
+		int accessGroupId;
+		string accessGroupObjectId;
+		int version;
+	} LoadEventsForObjRefInput;
+
+	typedef structure {
+		string storageCode;
+		int accessGroupId;
+		string accessGroupObjectId;
+		int version;
+		string newName;
+		int timestamp;
+		string eventType;
+		string storageObjectType;
+		int storageObjectTypeVersion;
+		int isGlobalAccessed;
+		int processed;
+	} WSEvent;
+
+	funcdef loadEventsForObjRef(LoadEventsForObjRefInput params) returns (list<WSEvent>) authentication required;
 };

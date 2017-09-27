@@ -470,4 +470,27 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
             throw new IllegalStateException(e);
         }
     }
+    
+    @Override
+    public List<kbaseknowledgeengine.WSEvent> loadEventsForObjRef(
+            LoadEventsForObjRefInput params, AuthToken authPart) {
+        checkAdmin(authPart);
+        List<WSEvent> events = store.loadEventsForObjRef((int)(long)params.getAccessGroupId(), 
+                params.getAccessGroupObjectId(), params.getVersion() == null ? null : 
+                    ((int)(long)params.getVersion()));
+        List<kbaseknowledgeengine.WSEvent> ret = events.stream().map(
+                ev -> new kbaseknowledgeengine.WSEvent().withStorageCode(ev.storageCode)
+                .withAccessGroupId(asLong(ev.accessGroupId))
+                .withAccessGroupObjectId(ev.accessGroupObjectId)
+                .withVersion(asLong(ev.version))
+                .withNewName(ev.newName)
+                .withTimestamp(ev.timestamp)
+                .withEventType(ev.eventType)
+                .withStorageObjectType(ev.storageObjectType)
+                .withStorageObjectTypeVersion(asLong(ev.storageObjectTypeVersion))
+                .withIsGlobalAccessed(ev.isGlobalAccessed == null ? null : (ev.isGlobalAccessed ? 1L : 0L))
+                .withProcessed(ev.processed == null ? null : (ev.processed ? 1L : 0L))
+                ).collect(Collectors.toList());
+        return ret;
+    }
 }

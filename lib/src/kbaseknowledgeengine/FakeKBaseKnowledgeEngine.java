@@ -195,6 +195,13 @@ public class FakeKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         // TODO Auto-generated method stub
     }
     
+    @Override
+    public List<WSEvent> loadEventsForObjRef(LoadEventsForObjRefInput params,
+            AuthToken authPart) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
 	public static void main(String[] args) {
 		FakeKBaseKnowledgeEngine f =  new FakeKBaseKnowledgeEngine();
 		System.out.println("Connectors: " + f.getConnectorsStatus(null, null).size());

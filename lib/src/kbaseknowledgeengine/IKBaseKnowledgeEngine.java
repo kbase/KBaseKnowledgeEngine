@@ -19,4 +19,6 @@ public interface IKBaseKnowledgeEngine {
 	
     public void cleanConnectorErrors(AuthToken authPart);
 
+    public List<WSEvent> loadEventsForObjRef(LoadEventsForObjRefInput params, AuthToken authPart);
+
 }

@@ -633,6 +633,120 @@ Only admins can run this function.
     }
 }
  
+
+
+=head2 loadEventsForObjRef
+
+  $return = $obj->loadEventsForObjRef($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBaseKnowledgeEngine.LoadEventsForObjRefInput
+$return is a reference to a list where each element is a KBaseKnowledgeEngine.WSEvent
+LoadEventsForObjRefInput is a reference to a hash where the following keys are defined:
+	accessGroupId has a value which is an int
+	accessGroupObjectId has a value which is a string
+	version has a value which is an int
+WSEvent is a reference to a hash where the following keys are defined:
+	storageCode has a value which is a string
+	accessGroupId has a value which is an int
+	accessGroupObjectId has a value which is a string
+	version has a value which is an int
+	newName has a value which is a string
+	timestamp has a value which is an int
+	eventType has a value which is a string
+	storageObjectType has a value which is a string
+	storageObjectTypeVersion has a value which is an int
+	isGlobalAccessed has a value which is an int
+	processed has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBaseKnowledgeEngine.LoadEventsForObjRefInput
+$return is a reference to a list where each element is a KBaseKnowledgeEngine.WSEvent
+LoadEventsForObjRefInput is a reference to a hash where the following keys are defined:
+	accessGroupId has a value which is an int
+	accessGroupObjectId has a value which is a string
+	version has a value which is an int
+WSEvent is a reference to a hash where the following keys are defined:
+	storageCode has a value which is a string
+	accessGroupId has a value which is an int
+	accessGroupObjectId has a value which is a string
+	version has a value which is an int
+	newName has a value which is a string
+	timestamp has a value which is an int
+	eventType has a value which is a string
+	storageObjectType has a value which is a string
+	storageObjectTypeVersion has a value which is an int
+	isGlobalAccessed has a value which is an int
+	processed has a value which is an int
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub loadEventsForObjRef
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function loadEventsForObjRef (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to loadEventsForObjRef:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'loadEventsForObjRef');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "KBaseKnowledgeEngine.loadEventsForObjRef",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'loadEventsForObjRef',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method loadEventsForObjRef",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'loadEventsForObjRef',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -676,16 +790,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'cleanAppData',
+                method_name => 'loadEventsForObjRef',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method cleanAppData",
+            error => "Error invoking method loadEventsForObjRef",
             status_line => $self->{client}->status_line,
-            method_name => 'cleanAppData',
+            method_name => 'loadEventsForObjRef',
         );
     }
 }
@@ -995,6 +1109,90 @@ app has a value which is a string
 
 a reference to a hash where the following keys are defined:
 app has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 LoadEventsForObjRefInput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+accessGroupId has a value which is an int
+accessGroupObjectId has a value which is a string
+version has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+accessGroupId has a value which is an int
+accessGroupObjectId has a value which is a string
+version has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 WSEvent
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+storageCode has a value which is a string
+accessGroupId has a value which is an int
+accessGroupObjectId has a value which is a string
+version has a value which is an int
+newName has a value which is a string
+timestamp has a value which is an int
+eventType has a value which is a string
+storageObjectType has a value which is a string
+storageObjectTypeVersion has a value which is an int
+isGlobalAccessed has a value which is an int
+processed has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+storageCode has a value which is a string
+accessGroupId has a value which is an int
+accessGroupObjectId has a value which is a string
+version has a value which is an int
+newName has a value which is a string
+timestamp has a value which is an int
+eventType has a value which is a string
+storageObjectType has a value which is a string
+storageObjectTypeVersion has a value which is an int
+isGlobalAccessed has a value which is an int
+processed has a value which is an int
 
 
 =end text

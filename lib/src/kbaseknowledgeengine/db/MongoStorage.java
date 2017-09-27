@@ -188,6 +188,13 @@ public class MongoStorage {
         return asList(wsEvents.find(String.format("{%s:#}", "processed"), false).as(WSEvent.class));
     }
     
+    public List<WSEvent> loadEventsForObjRef(int accessGroupId, String accessGroupObjectId,
+            Integer version) {
+        return asList(wsEvents.find(String.format("{%s:#,%s:#,%s:#}", "accessGroupId",
+                "accessGroupObjectId", "version"), accessGroupId, accessGroupObjectId, version)
+                .as(WSEvent.class));
+    }
+    
     public void updateEvent(WSEvent evt) {
         wsEvents.update(String.format("{%s:#,%s:#,%s:#,%s:#,%s:#}", "accessGroupId",
                     "accessGroupObjectId", "version", "timestamp", "eventType"), evt.accessGroupId,
