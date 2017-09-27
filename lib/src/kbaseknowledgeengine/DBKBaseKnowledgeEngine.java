@@ -91,8 +91,10 @@ public class DBKBaseKnowledgeEngine implements IKBaseKnowledgeEngine {
         checkAdmin(authPart);
         List<ConnJob> connJobs = store.loadAllConnJobs();
         for (ConnJob job : connJobs) {
-            if (job.getUser().equals("<owner>") || 
-                    job.getState().equals(MongoStorage.JOB_STATE_ERROR)) {
+            if ((job.getNewReNodes() == null || job.getNewReNodes() == 0) &&
+                    (job.getNewReLinks() == null || job.getNewReLinks() == 0) &&
+                    (job.getState().equals(MongoStorage.JOB_STATE_ERROR) ||
+                            job.getState().equals(MongoStorage.JOB_STATE_FINISHED))) {
                 store.deleteConnJob(job.getJobId());
             }
         }
