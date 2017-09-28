@@ -44,7 +44,7 @@ public class MongoStorage {
     public static final String JOB_STATE_FINISHED = "finished";
     public static final String JOB_STATE_ERROR = "error";
     
-    public static final int DB_VERSION = 2;
+    public static final int DB_VERSION = 3;
     public static final String PROP_DB_VERSION = "db_version";
     
     public MongoStorage(String hosts, String db, String user, String pwd,
