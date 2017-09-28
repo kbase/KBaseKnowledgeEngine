@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import kbaseknowledgeengine.cfg.IExecConfigLoader;
 import kbaseknowledgeengine.db.MongoStorage;
 import kbaseknowledgeengine.db.WSEvent;
+import us.kbase.common.service.UObject;
 
 public class WSEventProcessor {
     private final MongoStorage store;
@@ -88,7 +91,9 @@ public class WSEventProcessor {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
-            listener.objectVersionCreated(evt);
+            WSEvent copy = UObject.transformStringToObject(
+                    UObject.transformObjectToString(evt), WSEvent.class);
+            listener.objectVersionCreated(copy);
         }
     }
     
